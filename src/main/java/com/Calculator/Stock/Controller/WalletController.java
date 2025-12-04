@@ -53,7 +53,7 @@ public class WalletController {
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
         Wallet wallet = user.getWallet();
         if(wallet == null) {
-            new RuntimeException("Wallet not found");
+            new RuntimeException("Wallet not found");   
         }
         return walletService.Withdraw(wallet,amount.getAmount());
     }

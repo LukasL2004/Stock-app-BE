@@ -4,6 +4,7 @@ import com.Calculator.Stock.Entity.User;
 import com.Calculator.Stock.Entity.Wallet;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Repository.WalletRepository;
+import com.Calculator.Stock.dto.InvestmentDTO;
 import com.Calculator.Stock.dto.WalletResponseDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,8 @@ private final UserRepository userRepository;
 
         wallet.setBalance(wallet.getBalance() + amount);
 
+        wallet.setInvestment(wallet.getInvestment() + amount);
+
         return converToDTO(walletRepository.save(wallet));
     }
 
@@ -53,8 +56,16 @@ private final UserRepository userRepository;
         }
 
         return new WalletResponseDTO(wallet.getBalance());
-
-
     }
+
+    public InvestmentDTO getInvestment(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        Wallet wallet = user.getWallet();
+        if(wallet == null){
+            throw new RuntimeException("Wallet not found");
+        }
+        return new InvestmentDTO(wallet.getInvestment());
+    }
+
 
 }

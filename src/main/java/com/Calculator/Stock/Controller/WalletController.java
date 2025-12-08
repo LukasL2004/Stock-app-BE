@@ -6,6 +6,7 @@ import com.Calculator.Stock.Repository.WalletRepository;
 import com.Calculator.Stock.Services.UserService;
 import com.Calculator.Stock.Services.WalletService;
 import com.Calculator.Stock.dto.FoundsRequestDTO;
+import com.Calculator.Stock.dto.InvestmentDTO;
 import com.Calculator.Stock.dto.WalletResponseDTO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.Calculator.Stock.Entity.User;
@@ -31,6 +32,12 @@ public class WalletController {
     public WalletResponseDTO Balance(@AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
         return walletService.SeeBalance(email);
+    }
+
+    @GetMapping("/Investment")
+    public InvestmentDTO Investment(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        return walletService.getInvestment(email);
     }
 
     @PostMapping("/AddFounds")

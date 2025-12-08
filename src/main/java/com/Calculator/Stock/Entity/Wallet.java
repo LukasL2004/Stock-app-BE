@@ -11,12 +11,22 @@ public class Wallet {
     private int id;
     @Column( nullable = false)
     private float balance;
+    @Column (nullable = false)
+    private float investment;
 
 
+    public float getInvestment() {
+        return investment;
+    }
 
-    public Wallet(int id, float balance, float deposit) {
+    public void setInvestment(float investment) {
+        this.investment = investment;
+    }
+
+    public Wallet(int id, float balance, float deposit, float investment) {
         this.id = id;
         this.balance = balance;
+        this.investment = investment;
     }
 
     public User getUser() {

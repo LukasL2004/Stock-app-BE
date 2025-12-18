@@ -23,7 +23,7 @@ public class Wallet {
         this.investment = investment;
     }
 
-    public Wallet(int id, float balance, float deposit, float investment) {
+    public Wallet(int id, float balance, float investment) {
         this.id = id;
         this.balance = balance;
         this.investment = investment;

@@ -1,50 +1,43 @@
 package com.Calculator.Stock.Controller;
-
-import com.Calculator.Stock.Entity.User;
-import com.Calculator.Stock.Repository.UserRepository;
-import com.Calculator.Stock.Services.UserService;
+import com.Calculator.Stock.Services.UsersService;
 import com.Calculator.Stock.dto.LoginRequest;
+import com.Calculator.Stock.dto.UserDTO;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
+
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    private final UserService userService;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final UsersService usersService;
+
 
     @PostMapping("/register")
-    public User registerUser(@RequestBody User user) {
+    public UserDTO registerUser(@RequestBody UserDTO user) {
 
-        return userService.registerUser(user);
+        return usersService.RegisterUser(user);
     }
 
-    @GetMapping("/Email/{email}")
-    public User getUserByEmail(@PathVariable String email) {
-        return userService.FindUserByEmail(email);
+    @GetMapping
+    public UserDTO getUserByEmail(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        return usersService.GetUser(email);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-           try{
-               String jwtToken = userService.login(loginRequest.getEmail(), loginRequest.getPassword());
-               Map<String, String> map = new HashMap<>();
-               map.put("token", jwtToken);
-
-               return ResponseEntity.ok(map);
-           }catch (Exception e){
-               return ResponseEntity.badRequest().body(e.getMessage());
-           }
+   public ResponseEntity<Map<String,String>> LoginUser(@RequestBody LoginRequest loginRequest) {
+        String JwtToken = usersService.LoginUser(loginRequest);
+        Map<String,String> map = new HashMap<>();
+        map.put("token",JwtToken);
+        return ResponseEntity.ok(map);
     }
 }

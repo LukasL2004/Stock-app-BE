@@ -13,15 +13,12 @@ public class StocksDTO {
     private String id;
     private String symbol;
 
-    private String close;
 
     private String date;
-
-    private String high;
-
-    private String low;
+    private String price;
 
     private String open;
-
+    private String high;
+    private String low;
     private String volume;
 }

@@ -3,11 +3,14 @@ import com.Calculator.Stock.Entity.Stock;
 import com.Calculator.Stock.Mapper.TwelveDataDTOMapper;
 import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Services.StocksService;
+import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,10 +48,36 @@ public class StockServiceImpl implements StocksService {
         for(TwelveDataDTO.Values value :response.getValues()){
 
             Stock stockOutput = TwelveDataDTOMapper.mapValueToStock(value, currentSymbol);
+            boolean exists = stockRepository.existsBySymbolAndDate(currentSymbol, stockOutput.getDate());
+            if(!exists){
             stockRepository.save(stockOutput);
+            System.out.println("Added stock: " + currentSymbol);
+            }else{
+                System.out.println("Duplicate stock: " + currentSymbol);
+            }
         }
 
             return response;
+    }
+
+    @Override
+    public List<StocksDTO> getStocksValues() {
+        List<StocksDTO> allStocksList = new ArrayList<>();
+
+        try {
+            for (String targetSymbol : targetSymbols) {
+                Stock stocksValue = stockRepository.findTopBySymbolOrderByDateDesc(targetSymbol);
+                if (stocksValue != null) {
+                    StocksDTO stocksDTO = TwelveDataDTOMapper.StockToDTOMapper(stocksValue);
+                    allStocksList.add(stocksDTO);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+
+        return allStocksList;
     }
 
     @Scheduled(fixedRate =90000 )

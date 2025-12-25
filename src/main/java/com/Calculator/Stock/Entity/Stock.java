@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Getter
 @Data
-@Document(collation = "Stocks_db")
+@Document(collection = "stocks")
 public class Stock {
 
     @Id

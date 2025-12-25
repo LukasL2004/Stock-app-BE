@@ -1,6 +1,7 @@
 package com.Calculator.Stock.Mapper;
 
 import com.Calculator.Stock.Entity.Stock;
+import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
 
 public class TwelveDataDTOMapper {
@@ -26,4 +27,19 @@ public class TwelveDataDTOMapper {
 
         return stock;
     }
+
+    public static StocksDTO StockToDTOMapper(Stock stock) {
+        return new StocksDTO(
+                stock.getId(),
+                stock.getSymbol(),
+                stock.getDate(),
+                stock.getPrice(),
+                stock.getOpen(),
+                stock.getHigh(),
+                stock.getLow(),
+                stock.getVolume()
+        );
+
+    }
+
 }

@@ -5,7 +5,7 @@ import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
 
 public class TwelveDataDTOMapper {
-    public static Stock mapValueToStock(TwelveDataDTO.Values valuesDto, String symbol) {
+    public static Stock mapValueToStock(TwelveDataDTO.Values valuesDto,String status, String symbol) {
         if (valuesDto == null) {
             return null;
         }
@@ -23,6 +23,7 @@ public class TwelveDataDTOMapper {
         stock.setOpen(valuesDto.getOpen());
         stock.setHigh(valuesDto.getHigh());
         stock.setLow(valuesDto.getLow());
+        stock.setStatus(status);
         stock.setVolume(valuesDto.getVolume());
 
         return stock;

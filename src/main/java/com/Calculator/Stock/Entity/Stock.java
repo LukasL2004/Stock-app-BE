@@ -28,6 +28,7 @@ public class Stock {
     private String high;
     private String low;
     private String volume;
+    private String status;
 
 
 }

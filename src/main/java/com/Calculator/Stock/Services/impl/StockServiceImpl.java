@@ -45,9 +45,10 @@ public class StockServiceImpl implements StocksService {
         }
 
         String currentSymbol = response.getMeta().getSymbol();
+        String currentStatus = response.getStatus();
         for(TwelveDataDTO.Values value :response.getValues()){
 
-            Stock stockOutput = TwelveDataDTOMapper.mapValueToStock(value, currentSymbol);
+            Stock stockOutput = TwelveDataDTOMapper.mapValueToStock(value,currentStatus ,currentSymbol);
             boolean exists = stockRepository.existsBySymbolAndDate(currentSymbol, stockOutput.getDate());
             if(!exists){
             stockRepository.save(stockOutput);

@@ -17,12 +17,12 @@ public class TwelveDataDTOMapper {
 
 
         stock.setDate(valuesDto.getDatetime());
-        stock.setPrice(valuesDto.getClose());
+        stock.setPrice(Float.parseFloat(valuesDto.getClose()));
 
 
-        stock.setOpen(valuesDto.getOpen());
-        stock.setHigh(valuesDto.getHigh());
-        stock.setLow(valuesDto.getLow());
+        stock.setOpen(Float.parseFloat(valuesDto.getOpen()));
+        stock.setHigh(Float.parseFloat(valuesDto.getHigh()));
+        stock.setLow(Float.parseFloat(valuesDto.getLow()));
         stock.setStatus(status);
         stock.setVolume(valuesDto.getVolume());
 
@@ -38,8 +38,10 @@ public class TwelveDataDTOMapper {
                 stock.getOpen(),
                 stock.getHigh(),
                 stock.getLow(),
-                stock.getVolume()
+                stock.getVolume(),
+                stock.getStatus()
         );
+
 
     }
 

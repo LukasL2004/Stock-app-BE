@@ -15,10 +15,11 @@ public class StocksDTO {
 
 
     private String date;
-    private String price;
+    private float price;
 
-    private String open;
-    private String high;
-    private String low;
+    private float open;
+    private float high;
+    private float low;
     private String volume;
+    private String status;
 }

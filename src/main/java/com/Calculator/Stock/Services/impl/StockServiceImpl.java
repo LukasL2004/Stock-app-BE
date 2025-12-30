@@ -81,7 +81,7 @@ public class StockServiceImpl implements StocksService {
         return allStocksList;
     }
 
-    @Scheduled(fixedRate =90000 )
+    @Scheduled(fixedRate =180000 )
     public void updateStocks() {
         System.out.println("Updating stocks");
         for(String symbol :targetSymbols){

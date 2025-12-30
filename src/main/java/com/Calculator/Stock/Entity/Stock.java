@@ -19,40 +19,11 @@ public class Stock {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private String id;
     private String symbol;
-
-
     private String date;
-    private String price;
-
-    private String open;
-    private String high;
-    private String low;
+    private float price;
+    private float open;
+    private float high;
+    private float low;
     private String volume;
     private String status;
-
-
 }
-//}
-//Symbol
-//:
-//        "AAPL:NASDAQ"
-//candle
-//:
-//close
-//:
-//        "272.3"
-//datetime
-//:
-//        "2025-12-22 11:00:00"
-//high
-//:
-//        "272.41"
-//low
-//:
-//        "272.25"
-//        open
-//:
-//        "272.33"
-//        volume
-//        :
-//        "7027"

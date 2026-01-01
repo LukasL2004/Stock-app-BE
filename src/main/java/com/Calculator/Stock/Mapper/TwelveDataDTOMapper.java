@@ -1,6 +1,7 @@
 package com.Calculator.Stock.Mapper;
 
 import com.Calculator.Stock.Entity.Stock;
+import com.Calculator.Stock.dto.ChartDataDTO;
 import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
 
@@ -45,4 +46,23 @@ public class TwelveDataDTOMapper {
 
     }
 
+
+    public static ChartDataDTO StockToChartDataDTOMapper(Stock stock) {
+        String fullDateTime = stock.getDate();
+        String date = null;
+        String time = null;
+
+        if(fullDateTime != null && fullDateTime.contains(" ")) {
+            String[] splitDateTime = fullDateTime.split(" ");
+            date = splitDateTime[0];
+            time = splitDateTime[1];
+        }
+
+        return new ChartDataDTO(
+                stock.getSymbol(),
+                time,
+                date,
+                stock.getPrice()
+        );
+    }
 }

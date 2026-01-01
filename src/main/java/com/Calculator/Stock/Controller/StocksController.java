@@ -1,6 +1,7 @@
 package com.Calculator.Stock.Controller;
 
 import com.Calculator.Stock.Services.StocksService;
+import com.Calculator.Stock.dto.ChartDataDTO;
 import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,9 @@ public class StocksController {
     public List<StocksDTO> getStocksValues() {
         return stocksService.getStocksValues();
     }
+    @GetMapping("/charts")
+    public List<ChartDataDTO> getChartData() {
+        return stocksService.getChartData();
+    }
+
 }

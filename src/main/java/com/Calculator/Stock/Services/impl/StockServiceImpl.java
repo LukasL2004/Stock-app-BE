@@ -3,6 +3,7 @@ import com.Calculator.Stock.Entity.Stock;
 import com.Calculator.Stock.Mapper.TwelveDataDTOMapper;
 import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Services.StocksService;
+import com.Calculator.Stock.dto.ChartDataDTO;
 import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,6 +80,27 @@ public class StockServiceImpl implements StocksService {
 
 
         return allStocksList;
+    }
+
+    @Override
+    public List<ChartDataDTO> getChartData() {
+        List<ChartDataDTO> allChartDataList = new ArrayList<>();
+        try {
+            for (String targetSymbol : targetSymbols) {
+                List<Stock> stocksDataList = stockRepository.findAllBySymbol(targetSymbol);
+
+                if (stocksDataList != null && !stocksDataList.isEmpty()) {
+                    for (Stock stockData : stocksDataList) {
+                        ChartDataDTO chartDataDTO = TwelveDataDTOMapper.StockToChartDataDTOMapper(stockData);
+                        allChartDataList.add(chartDataDTO);
+                    }
+                }
+            }
+        } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        return allChartDataList;
     }
 
     @Scheduled(fixedRate =180000 )

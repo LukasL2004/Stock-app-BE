@@ -1,10 +1,13 @@
 package com.Calculator.Stock.dto;
 
+import com.Calculator.Stock.Entity.Portofolio;
 import com.Calculator.Stock.Entity.Wallet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,4 +20,5 @@ public class UserDTO {
     private String firstName;
     private String lastName;
     private Wallet wallet;
+    private List<Portofolio> portofolio;
 }

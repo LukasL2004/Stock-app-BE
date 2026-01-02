@@ -12,7 +12,8 @@ public class UserDtoMapper {
                 user.getPassword(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getWallet()
+                user.getWallet(),
+                user.getPortofolio()
         );
     }
 
@@ -23,7 +24,8 @@ public class UserDtoMapper {
                 userDTO.getPassword(),
                 userDTO.getFirstName(),
                 userDTO.getLastName(),
-                userDTO.getWallet()
+                userDTO.getWallet(),
+                userDTO.getPortofolio()
         );
     }
 

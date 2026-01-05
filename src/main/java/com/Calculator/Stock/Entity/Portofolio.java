@@ -20,9 +20,11 @@ public class Portofolio {
     @Column(nullable = false)
    private String symbol;
     @Column(nullable = false)
-    private float quantity;
-    @Column(nullable = false)
     private float averagePrice;
+    @Column(nullable = false )
+    private float amountOwned;
+    @Column(nullable = false)
+    private float shares;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

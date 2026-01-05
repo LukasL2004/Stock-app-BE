@@ -15,7 +15,8 @@ public class PortofolioDTO {
 
     private Long id;
     private String symbol;
-    private float quantity;
     private float averagePrice;
-    private User user;
+    private float amountOwned;
+    private float shares;
+    private Long userId;
 }

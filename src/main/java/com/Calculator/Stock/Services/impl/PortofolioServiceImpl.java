@@ -26,35 +26,45 @@ public class PortofolioServiceImpl implements PortofolioService {
     @Override
     public PortofolioDTO addToPortfolio(BuyStockDTO buyStockDTO) {
 
-        User user = userRepository.findById(buyStockDTO.getUser_id()).orElseThrow(() -> new RuntimeException("User Not Found"));
+        User user = userRepository.findById(buyStockDTO.getUser_id())
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
         Optional<Portofolio> portofolioAlrExt = portofolioRepository.findByUserAndSymbol(user, buyStockDTO.getSymbol());
         Portofolio portofolio;
+        if (buyStockDTO.getCurrentPrice() <= 0) {
+            throw new RuntimeException("Current price must be greater than 0");
+        }
 
         float shares = buyStockDTO.getAmountToInvest() / buyStockDTO.getCurrentPrice();
 
         if(portofolioAlrExt.isPresent()) {
             portofolio = portofolioAlrExt.get();
-            float newAmountOwned =  portofolio.getAmountOwned() + buyStockDTO.getAmountToInvest();
-            float toatalShares = portofolio.getShares() + shares;
 
-            float newAverageValue = newAmountOwned / toatalShares;
+            float newAmountOwned = portofolio.getAmountOwned() + buyStockDTO.getAmountToInvest();
+            float totalShares = portofolio.getShares() + shares;
+
+            if (totalShares > 0) {
+                float newAverageValue = newAmountOwned / totalShares;
+                portofolio.setAveragePrice(newAverageValue);
+            } else {
+                portofolio.setAveragePrice(0);
+            }
 
             portofolio.setAmountOwned(newAmountOwned);
-            portofolio.setShares(toatalShares);
-            portofolio.setAveragePrice(newAverageValue);
+            portofolio.setShares(totalShares);
 
-        }else{
+        } else {
             portofolio = new Portofolio();
             portofolio.setUser(user);
             portofolio.setSymbol(buyStockDTO.getSymbol());
             portofolio.setAveragePrice(buyStockDTO.getCurrentPrice());
             portofolio.setShares(shares);
             portofolio.setAmountOwned(buyStockDTO.getAmountToInvest());
-
         }
-           Portofolio Savedportofolio = portofolioRepository.save(portofolio);
 
-        return portofolioDTOMapper.portofolioToPortofolioDTO(Savedportofolio);
+        Portofolio savedPortofolio = portofolioRepository.save(portofolio);
+
+        return portofolioDTOMapper.portofolioToPortofolioDTO(savedPortofolio);
     }
 
 
@@ -70,10 +80,18 @@ public class PortofolioServiceImpl implements PortofolioService {
 
             float Shares = sellStockDTO.getWithdrawAmount() / sellStockDTO.getCurrentPrice();
 
+            if (Shares < 0.00001) {
+                Shares = 0;
+            }
+
             float NewAmountOwned = portofolio.getAmountOwned() - sellStockDTO.getWithdrawAmount();
             float NewTotalShares = portofolio.getShares() - Shares;
 
+
             if(portofolio.getShares() >= Shares){
+                if(NewTotalShares < 0.0001) {
+                    NewTotalShares = 0;
+                }
                 portofolio.setShares(NewTotalShares);
             }else {
                 throw  new RuntimeException("Sorry you don t haev enought shares");

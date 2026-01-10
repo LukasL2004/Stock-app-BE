@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Permite accesul PUBLIC (fără token) la login și register
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                        .requestMatchers("/error").permitAll()
                         // TOATE celelalte endpoint-uri necesită AUTENTIFICARE (token JWT valid)
                         .anyRequest().authenticated()
                 )

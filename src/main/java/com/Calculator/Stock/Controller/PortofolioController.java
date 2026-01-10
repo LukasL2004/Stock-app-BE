@@ -11,10 +11,7 @@ import com.Calculator.Stock.dto.SellStockDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -47,5 +44,10 @@ public class PortofolioController {
         sellStockDTO.setUser_id(user.getId());
 
         return portofolioService.SellToPortfolio(sellStockDTO);
+    }
+
+    @GetMapping("/{symbol}")
+    public PortofolioDTO getPortofolio(@AuthenticationPrincipal UserDetails userDetails,@PathVariable String symbol) {
+        return portofolioService.GetPortofolio(symbol);
     }
 }

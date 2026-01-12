@@ -15,6 +15,7 @@ public class PortofolioDTOMapper {
                 portofolioDTO.getAveragePrice(),
                 portofolioDTO.getAmountOwned(),
                 portofolioDTO.getShares(),
+                portofolioDTO.getProfit(),
                 user
         );
     }
@@ -26,6 +27,7 @@ public class PortofolioDTOMapper {
                 portofolio.getAveragePrice(),
                 portofolio.getAmountOwned(),
                 portofolio.getShares(),
+                portofolio.getProfit(),
                 portofolio.getUser() != null ? portofolio.getUser().getId() : null
         );
     }

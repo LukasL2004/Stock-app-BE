@@ -1,9 +1,11 @@
 package com.Calculator.Stock.Services.impl;
 
 import com.Calculator.Stock.Entity.Portofolio;
+import com.Calculator.Stock.Entity.Stock;
 import com.Calculator.Stock.Entity.User;
 import com.Calculator.Stock.Mapper.PortofolioDTOMapper;
 import com.Calculator.Stock.Repository.PortofolioRepository;
+import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.PortofolioService;
 import com.Calculator.Stock.dto.BuyStockDTO;
@@ -23,6 +25,7 @@ public class PortofolioServiceImpl implements PortofolioService {
     private final UserRepository userRepository;
     private final PortofolioRepository portofolioRepository;
     private final PortofolioDTOMapper portofolioDTOMapper;
+    private final StockRepository stockRepository ;
 
 
     @Override
@@ -30,6 +33,8 @@ public class PortofolioServiceImpl implements PortofolioService {
 
         User user = userRepository.findById(buyStockDTO.getUser_id())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
+
+        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(buyStockDTO.getSymbol());
 
         Optional<Portofolio> portofolioAlrExt = portofolioRepository.findByUserAndSymbol(user, buyStockDTO.getSymbol());
         Portofolio portofolio;
@@ -52,6 +57,9 @@ public class PortofolioServiceImpl implements PortofolioService {
                 portofolio.setAveragePrice(0);
             }
 
+            float profit = (stock.getPrice() - portofolio.getAveragePrice()) * portofolio.getShares();
+
+            portofolio.setProfit(profit);
             portofolio.setAmountOwned(newAmountOwned);
             portofolio.setShares(totalShares);
 
@@ -74,6 +82,7 @@ public class PortofolioServiceImpl implements PortofolioService {
     public PortofolioDTO SellToPortfolio(SellStockDTO sellStockDTO) {
         User user = userRepository.findById(sellStockDTO.getUser_id()).orElseThrow(() -> new RuntimeException("User not found"));
         Optional<Portofolio> existentPortofolio = portofolioRepository.findByUserAndSymbol(user, sellStockDTO.getSymbol());
+        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(sellStockDTO.getSymbol());
         Portofolio portofolio;
 
         if(existentPortofolio.isPresent()) {
@@ -88,6 +97,9 @@ public class PortofolioServiceImpl implements PortofolioService {
 
             float NewAmountOwned = portofolio.getAmountOwned() - sellStockDTO.getWithdrawAmount();
             float NewTotalShares = portofolio.getShares() - Shares;
+            float profit = (stock.getPrice() - portofolio.getAveragePrice()) * portofolio.getShares();
+
+            portofolio.setProfit(profit);
 
 
             if(portofolio.getShares() >= Shares){
@@ -124,4 +136,14 @@ public class PortofolioServiceImpl implements PortofolioService {
 
         return portofolioDTOMapper.portofolioToPortofolioDTO(portofolio);
     }
+
+    @Override
+    public float GetProfit(String symbol) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+        return 0;
+    }
+
 }

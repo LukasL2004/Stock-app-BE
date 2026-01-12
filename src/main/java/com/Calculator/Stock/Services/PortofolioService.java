@@ -11,5 +11,6 @@ public interface PortofolioService {
     PortofolioDTO addToPortfolio(BuyStockDTO buyStockDTO);
     PortofolioDTO SellToPortfolio(SellStockDTO sellStockDTO);
     PortofolioDTO GetPortofolio(String symbol);
+    float GetProfit(String symbol);
 
 }

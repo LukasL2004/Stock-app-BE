@@ -19,5 +19,6 @@ public class PortofolioDTO {
     private float amountOwned;
     private float shares;
     private float profit;
+    private float total;
     private Long userId;
 }

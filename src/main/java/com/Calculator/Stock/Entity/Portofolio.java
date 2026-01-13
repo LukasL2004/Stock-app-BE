@@ -27,6 +27,8 @@ public class Portofolio {
     private float shares;
     @Column(nullable = false)
     private float profit;
+    @Column(nullable = false)
+    private float total;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

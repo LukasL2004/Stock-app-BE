@@ -29,9 +29,7 @@ public class PortofolioServiceImpl implements PortofolioService {
     private final PortofolioDTOMapper portofolioDTOMapper;
     private final StockRepository stockRepository ;
 
-    private final List<String> targetSymbols = Arrays.asList(
-            "AAPL", "TSLA", "GOOGL", "MSFT", "AMZN", "NVDA", "META", "NFLX"
-    );
+
 
 
     @Override
@@ -41,7 +39,6 @@ public class PortofolioServiceImpl implements PortofolioService {
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
 
         Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(buyStockDTO.getSymbol());
-        float total = 0;
 
         Optional<Portofolio> portofolioAlrExt = portofolioRepository.findByUserAndSymbol(user, buyStockDTO.getSymbol());
         Portofolio portofolio;
@@ -50,12 +47,6 @@ public class PortofolioServiceImpl implements PortofolioService {
         }
 
         float shares = buyStockDTO.getAmountToInvest() / buyStockDTO.getCurrentPrice();
-        for(String target : targetSymbols){
-        Portofolio portofolio1 = portofolioRepository.findByUserAndSymbol(user,target).orElseThrow(() -> new RuntimeException("User Not Found"));
-
-        total = total + portofolio1.getAmountOwned();
-
-        }
 
         if(portofolioAlrExt.isPresent()) {
             portofolio = portofolioAlrExt.get();
@@ -72,7 +63,10 @@ public class PortofolioServiceImpl implements PortofolioService {
 
             float profit = (stock.getPrice() - portofolio.getAveragePrice()) * portofolio.getShares();
 
-            portofolio.setTotal(total);
+
+
+
+
             portofolio.setProfit(profit);
             portofolio.setAmountOwned(newAmountOwned);
             portofolio.setShares(totalShares);

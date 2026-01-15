@@ -8,15 +8,13 @@ import com.Calculator.Stock.Repository.PortofolioRepository;
 import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.PortofolioService;
-import com.Calculator.Stock.dto.BuyStockDTO;
-import com.Calculator.Stock.dto.PortofolioDTO;
-import com.Calculator.Stock.dto.SellStockDTO;
+import com.Calculator.Stock.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,18 +138,53 @@ public class PortofolioServiceImpl implements PortofolioService {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        Portofolio portofolio = portofolioRepository.findByUserAndSymbol(user,symbol).orElseThrow(() -> new RuntimeException("Portofolio not found"));
+        Optional<Portofolio> portofolio = portofolioRepository.findByUserAndSymbol(user,symbol);
 
-        return portofolioDTOMapper.portofolioToPortofolioDTO(portofolio);
+        if(portofolio.isEmpty()) {
+            PortofolioDTO emptyDTO = new PortofolioDTO();
+            emptyDTO.setSymbol(symbol);
+            emptyDTO.setAmountOwned(0);
+            return emptyDTO;
+        }
+
+        return portofolioDTOMapper.portofolioToPortofolioDTO(portofolio.get());
     }
 
     @Override
-    public float GetProfit(String symbol) {
+    public TotalDTO getTotal() {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
-        return 0;
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Portofolio> portofolio = portofolioRepository.findAllByUser(user);
+        TotalDTO totalDTO = new TotalDTO();
+        List<PortfolioChartDTO> portfolioChartDTOList = new ArrayList<>();
+        float total = 0;
+        for(Portofolio p: portofolio){
+            total += p.getAmountOwned();
+        }
+        for(Portofolio p: portofolio){
+        PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
+        float percentage = 0;
+        portfolioChartDTO.setSymbol(p.getSymbol());
+        portfolioChartDTO.setValue(p.getAmountOwned());
+
+        if(total>0){
+            percentage = (p.getAmountOwned()/total)*100;
+        }
+        portfolioChartDTO.setPercentage(percentage);
+
+        portfolioChartDTOList.add(portfolioChartDTO);
+        }
+        totalDTO.setPortfolioChart(portfolioChartDTOList);
+        totalDTO.setUser_Id(user.getId());
+        totalDTO.setTotal(total);
+
+
+
+        return totalDTO;
     }
+
 
 }

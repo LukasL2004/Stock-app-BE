@@ -8,6 +8,7 @@ import com.Calculator.Stock.Services.PortofolioService;
 import com.Calculator.Stock.dto.BuyStockDTO;
 import com.Calculator.Stock.dto.PortofolioDTO;
 import com.Calculator.Stock.dto.SellStockDTO;
+import com.Calculator.Stock.dto.TotalDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -49,5 +50,9 @@ public class PortofolioController {
     @GetMapping("/{symbol}")
     public PortofolioDTO getPortofolio(@AuthenticationPrincipal UserDetails userDetails,@PathVariable String symbol) {
         return portofolioService.GetPortofolio(symbol);
+    }
+    @GetMapping("/total")
+    public TotalDTO getTotal(@AuthenticationPrincipal UserDetails userDetails) {
+        return portofolioService.getTotal();
     }
 }

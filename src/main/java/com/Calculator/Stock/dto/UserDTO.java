@@ -1,5 +1,6 @@
 package com.Calculator.Stock.dto;
 
+import com.Calculator.Stock.Entity.AuditLog;
 import com.Calculator.Stock.Entity.Portofolio;
 import com.Calculator.Stock.Entity.Wallet;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,5 @@ public class UserDTO {
     private String lastName;
     private Wallet wallet;
     private List<Portofolio> portofolio;
+    private List<AuditLog> auditLogs;
 }

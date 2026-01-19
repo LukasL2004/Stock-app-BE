@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,10 +32,12 @@ public class AuditLogServiceImpl implements AuditLogService {
     public AuditLogDTO addToAuditLog(AuditLogDTO auditLogDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
+        Date date = new Date();
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
         auditLogDTO.setUser_id(user.getId());
+        auditLogDTO.setDate(date.toString());
 
         AuditLog auditLog = auditLogDTOMapper.auditLogDTOToAuditLog(auditLogDTO,user);
 

@@ -3,7 +3,9 @@ package com.Calculator.Stock.Services.impl;
 import com.Calculator.Stock.Entity.Portofolio;
 import com.Calculator.Stock.Entity.Stock;
 import com.Calculator.Stock.Entity.User;
+import com.Calculator.Stock.Mapper.AuditLogDTOMapper;
 import com.Calculator.Stock.Mapper.PortofolioDTOMapper;
+import com.Calculator.Stock.Repository.AuditLogRespository;
 import com.Calculator.Stock.Repository.PortofolioRepository;
 import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
@@ -15,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,13 +28,17 @@ public class PortofolioServiceImpl implements PortofolioService {
     private final UserRepository userRepository;
     private final PortofolioRepository portofolioRepository;
     private final PortofolioDTOMapper portofolioDTOMapper;
-    private final StockRepository stockRepository ;
+    private final StockRepository stockRepository;
+    private final AuditLogRespository auditLogRespository;
+    private final AuditLogDTOMapper auditLogDTOMapper;
 
 
 
 
     @Override
     public PortofolioDTO addToPortfolio(BuyStockDTO buyStockDTO) {
+
+    String date = new Date().toString();
 
         User user = userRepository.findById(buyStockDTO.getUser_id())
                 .orElseThrow(() -> new RuntimeException("User Not Found"));
@@ -61,13 +68,20 @@ public class PortofolioServiceImpl implements PortofolioService {
 
             float profit = (stock.getPrice() - portofolio.getAveragePrice()) * portofolio.getShares();
 
-
-
-
-
             portofolio.setProfit(profit);
             portofolio.setAmountOwned(newAmountOwned);
             portofolio.setShares(totalShares);
+
+            AuditLogDTO auditLogDTO = new AuditLogDTO();
+            auditLogDTO.setUser_id(user.getId());
+            auditLogDTO.setDate(date);
+            auditLogDTO.setShares(shares);
+            auditLogDTO.setSymbol(buyStockDTO.getSymbol());
+            auditLogDTO.setPrice(buyStockDTO.getCurrentPrice());
+            auditLogDTO.setTotal(buyStockDTO.getAmountToInvest());
+
+            auditLogRespository.save(auditLogDTOMapper.auditLogDTOToAuditLog(auditLogDTO,user));
+
 
         } else {
             portofolio = new Portofolio();
@@ -76,6 +90,18 @@ public class PortofolioServiceImpl implements PortofolioService {
             portofolio.setAveragePrice(buyStockDTO.getCurrentPrice());
             portofolio.setShares(shares);
             portofolio.setAmountOwned(buyStockDTO.getAmountToInvest());
+
+            AuditLogDTO auditLogDTO = new AuditLogDTO();
+            auditLogDTO.setUser_id(user.getId());
+            auditLogDTO.setDate(date);
+            auditLogDTO.setShares(shares);
+            auditLogDTO.setSymbol(buyStockDTO.getSymbol());
+            auditLogDTO.setPrice(buyStockDTO.getCurrentPrice());
+            auditLogDTO.setTotal(buyStockDTO.getAmountToInvest());
+
+            auditLogRespository.save(auditLogDTOMapper.auditLogDTOToAuditLog(auditLogDTO,user));
+
+
         }
 
         Portofolio savedPortofolio = portofolioRepository.save(portofolio);

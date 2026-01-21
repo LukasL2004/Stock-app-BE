@@ -1,4 +1,4 @@
-package com.Calculator.Stock.exeption;
+package com.Calculator.Stock.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +24,15 @@ public class GlobalExceptionHandler {
             HttpStatus.BAD_REQUEST.value()
     );
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+}
+
+@ExceptionHandler
+public ResponseEntity<ApiError> WrongCredentials(WrongUserCredentials e){
+    ApiError apiError = new ApiError(
+            e.getMessage(),
+            HttpStatus.UNAUTHORIZED.value()
+    );
+    return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
 }
 
 @ExceptionHandler(Exception.class)

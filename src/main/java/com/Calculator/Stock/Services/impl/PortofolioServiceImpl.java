@@ -11,6 +11,8 @@ import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.PortofolioService;
 import com.Calculator.Stock.dto.*;
+import com.Calculator.Stock.exception.InsufficientFundsException;
+import com.Calculator.Stock.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,14 +43,14 @@ public class PortofolioServiceImpl implements PortofolioService {
     String date = new Date().toString();
 
         User user = userRepository.findById(buyStockDTO.getUser_id())
-                .orElseThrow(() -> new RuntimeException("User Not Found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
         Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(buyStockDTO.getSymbol());
 
         Optional<Portofolio> portofolioAlrExt = portofolioRepository.findByUserAndSymbol(user, buyStockDTO.getSymbol());
         Portofolio portofolio;
         if (buyStockDTO.getCurrentPrice() <= 0) {
-            throw new RuntimeException("Current price must be greater than 0");
+            throw new InsufficientFundsException("Current price must be greater than 0");
         }
 
         float shares = buyStockDTO.getAmountToInvest() / buyStockDTO.getCurrentPrice();
@@ -112,7 +114,7 @@ public class PortofolioServiceImpl implements PortofolioService {
 
     @Override
     public PortofolioDTO SellToPortfolio(SellStockDTO sellStockDTO) {
-        User user = userRepository.findById(sellStockDTO.getUser_id()).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(sellStockDTO.getUser_id()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Optional<Portofolio> existentPortofolio = portofolioRepository.findByUserAndSymbol(user, sellStockDTO.getSymbol());
         Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(sellStockDTO.getSymbol());
         Portofolio portofolio;
@@ -140,15 +142,15 @@ public class PortofolioServiceImpl implements PortofolioService {
                 }
                 portofolio.setShares(NewTotalShares);
             }else {
-                throw  new RuntimeException("Sorry you don t haev enought shares");
+                throw  new InsufficientFundsException("Sorry you don t have enough shares");
             }
             if(portofolio.getAmountOwned() >= sellStockDTO.getWithdrawAmount()){
                 portofolio.setAmountOwned(NewAmountOwned);
             }else {
-               throw new RuntimeException("Sorry you don t haev enought");
+               throw new InsufficientFundsException("Sorry you don t have enough");
             }
         }else {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         Portofolio savePortofolio = portofolioRepository.save(portofolio);
 
@@ -162,7 +164,7 @@ public class PortofolioServiceImpl implements PortofolioService {
 
         String email = authentication.getName();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Optional<Portofolio> portofolio = portofolioRepository.findByUserAndSymbol(user,symbol);
 
@@ -182,7 +184,7 @@ public class PortofolioServiceImpl implements PortofolioService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         List<Portofolio> portofolio = portofolioRepository.findAllByUser(user);
         TotalDTO totalDTO = new TotalDTO();
         List<PortfolioChartDTO> portfolioChartDTOList = new ArrayList<>();

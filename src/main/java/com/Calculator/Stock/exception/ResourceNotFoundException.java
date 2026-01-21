@@ -1,4 +1,4 @@
-package com.Calculator.Stock.exeption;
+package com.Calculator.Stock.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(String message) {

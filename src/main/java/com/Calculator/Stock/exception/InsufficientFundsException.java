@@ -1,4 +1,4 @@
-package com.Calculator.Stock.exeption;
+package com.Calculator.Stock.exception;
 
 public class InsufficientFundsException extends RuntimeException {
     public InsufficientFundsException(String message) {

@@ -7,6 +7,7 @@ import com.Calculator.Stock.Repository.AuditLogRespository;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.AuditLogService;
 import com.Calculator.Stock.dto.AuditLogDTO;
+import com.Calculator.Stock.exception.ResourceNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -34,7 +35,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         String email = authentication.getName();
         Date date = new Date();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         auditLogDTO.setUser_id(user.getId());
         auditLogDTO.setDate(date.toString());
@@ -51,7 +52,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         List<AuditLog> auditLog = auditLogRespository.findAllByUser(user);
 

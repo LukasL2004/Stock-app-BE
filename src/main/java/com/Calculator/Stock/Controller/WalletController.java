@@ -7,6 +7,7 @@ import com.Calculator.Stock.Services.WalletsService;
 import com.Calculator.Stock.dto.FoundsRequestDTO;
 import com.Calculator.Stock.dto.WalletDTO;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.Calculator.Stock.Entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +29,7 @@ public class WalletController {
     }
 
     @PostMapping("/AddFounds")
-    public WalletDTO AddFounds(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
+    public ResponseEntity<String> AddFounds(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
         String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
@@ -36,16 +37,19 @@ public class WalletController {
         Wallet wallet = user.getWallet();
         WalletDTO mappedWallet = WalletDTOMapper.WalletDTOMapper(wallet);
 
-        return walletService.AddFounds(mappedWallet,amount.getAmount());
+        walletService.AddFounds(mappedWallet,amount.getAmount());
+        return ResponseEntity.ok("Deposit successful");
     }
 
     @PostMapping("/Withdraw")
-    public WalletDTO Withdraw(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
+    public ResponseEntity<String> Withdraw(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
         String email = userDetails.getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
         Wallet wallet = user.getWallet();
         WalletDTO mappedWallet = WalletDTOMapper.WalletDTOMapper(wallet);
 
-        return walletService.Withdraw(mappedWallet,amount.getAmount());
+        walletService.Withdraw(mappedWallet,amount.getAmount());
+
+        return ResponseEntity.ok("Withdraw successful");
     }
 }

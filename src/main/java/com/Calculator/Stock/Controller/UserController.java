@@ -3,7 +3,6 @@ import com.Calculator.Stock.Services.UsersService;
 import com.Calculator.Stock.dto.LoginRequest;
 import com.Calculator.Stock.dto.UserDTO;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,9 +20,11 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public UserDTO registerUser(@RequestBody UserDTO user) {
+    public ResponseEntity<String> registerUser(@RequestBody UserDTO user) {
 
-        return usersService.RegisterUser(user);
+        usersService.RegisterUser(user);
+
+        return ResponseEntity.ok("User registered successfully") ;
     }
 
     @GetMapping

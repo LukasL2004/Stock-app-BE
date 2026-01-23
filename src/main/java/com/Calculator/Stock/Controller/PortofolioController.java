@@ -10,6 +10,7 @@ import com.Calculator.Stock.dto.PortofolioDTO;
 import com.Calculator.Stock.dto.SellStockDTO;
 import com.Calculator.Stock.dto.TotalDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -26,25 +27,25 @@ public class PortofolioController {
     PortofolioDTOMapper portofolioDTOMapper;
 
     @PostMapping("/buy")
-    public PortofolioDTO addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BuyStockDTO buyStockDTO ) {
+    public ResponseEntity<String> addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BuyStockDTO buyStockDTO ) {
 
        String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
         buyStockDTO.setUser_id(user.getId());
-
-        return portofolioService.addToPortfolio(buyStockDTO);
+        portofolioService.addToPortfolio(buyStockDTO);
+        return ResponseEntity.ok("Your purchase was a success");
     }@PostMapping("/sell")
-    public PortofolioDTO SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SellStockDTO sellStockDTO ) {
+    public ResponseEntity<String> SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SellStockDTO sellStockDTO ) {
 
        String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
 
         sellStockDTO.setUser_id(user.getId());
-
-        return portofolioService.SellToPortfolio(sellStockDTO);
+        portofolioService.SellToPortfolio(sellStockDTO);
+        return ResponseEntity.ok("The withdraw was a success");
     }
 
     @GetMapping("/{symbol}")

@@ -4,12 +4,8 @@ import com.Calculator.Stock.Services.StocksService;
 import com.Calculator.Stock.dto.ChartDataDTO;
 import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController

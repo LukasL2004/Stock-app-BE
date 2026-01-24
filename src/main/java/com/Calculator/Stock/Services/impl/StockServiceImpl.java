@@ -6,6 +6,7 @@ import com.Calculator.Stock.Services.StocksService;
 import com.Calculator.Stock.dto.ChartDataDTO;
 import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Service
 public class StockServiceImpl implements StocksService {
 
@@ -41,7 +43,7 @@ public class StockServiceImpl implements StocksService {
         TwelveDataDTO response = restTemplate.getForObject(API_URL, TwelveDataDTO.class);
 
         if(response==null){
-            System.out.println("Error");
+            log.error("Error");
             return null;
         }
 
@@ -53,9 +55,9 @@ public class StockServiceImpl implements StocksService {
             boolean exists = stockRepository.existsBySymbolAndDate(currentSymbol, stockOutput.getDate());
             if(!exists){
             stockRepository.save(stockOutput);
-            System.out.println("Added stock: " + currentSymbol);
+            log.info("Added stock: " + currentSymbol);
             }else{
-                System.out.println("Duplicate stock: " + currentSymbol);
+                log.info("Duplicate stock: " + currentSymbol);
             }
         }
 
@@ -75,7 +77,7 @@ public class StockServiceImpl implements StocksService {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            log.error("Error: " + e.getMessage());
         }
 
 
@@ -105,16 +107,16 @@ public class StockServiceImpl implements StocksService {
 
     @Scheduled(fixedRate =1800000 )
     public void updateStocks() {
-        System.out.println("Updating stocks");
+        log.info("Updating stocks");
         for(String symbol :targetSymbols){
             try{
             getStocks(symbol);
             Thread.sleep(15000);
             }catch (Exception e){
-                System.out.println("Error: "+e.getMessage());
+                log.error("Error: "+e.getMessage());
             }
         }
-        System.out.println("Updated Stocks");
+        log.info("Updated Stocks");
     }
 
 }

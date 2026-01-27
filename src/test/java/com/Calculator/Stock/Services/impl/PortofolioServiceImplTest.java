@@ -12,6 +12,7 @@ import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.dto.BuyStockDTO;
 import com.Calculator.Stock.dto.PortofolioDTO;
+import com.Calculator.Stock.dto.SellStockDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -138,8 +139,53 @@ class PortofolioServiceImplTest {
         assertThat(response.getSymbol()).isEqualTo(symbol);
 
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void sellToPortfolio(){
+        String email = "test@test.com";
+        String symbol = "AAPL";
+        Long userID = 1L;
+
+        User user =  new User();
+        user.setEmail(email);
+        user.setId(userID);
+
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+
+        Stock stock = new Stock();
+        stock.setSymbol(symbol);
+        stock.setPrice(120);
+        when(stockRepository.findTopBySymbolOrderByDateDesc(symbol)).thenReturn(stock);
+
+        Portofolio portofolio = new Portofolio();
+        portofolio.setSymbol(symbol);
+        portofolio.setAmountOwned(550);
+        portofolio.setShares(50);
+
+        when(portofolioRepository.findByUserAndSymbol(any(), eq(symbol))).thenReturn(Optional.of(portofolio));
+        when(portofolioRepository.save(any(Portofolio.class))).thenReturn(portofolio);
+
+//        AuditLog auditLog = new AuditLog();
+//        auditLog.setUser(user);
+//
+//        when(auditLogRespository.save(any())).thenReturn(auditLog);
+
+        PortofolioDTO portofolioDTO = new PortofolioDTO();
+        portofolioDTO.setSymbol(symbol);
+        portofolioDTO.setAmountOwned(550);
+
+        when(portofolioDTOMapper.portofolioToPortofolioDTO(portofolio)).thenReturn(portofolioDTO);
+
+        SellStockDTO sell = new SellStockDTO(userID,symbol,120,200);
+
+        PortofolioDTO rezultat = portofolioService.SellToPortfolio(sell);
+
+        assertThat(rezultat).isNotNull();
+        assertThat(rezultat.getSymbol()).isEqualTo(symbol);
 
 
 
     }
+
 }

@@ -2,10 +2,12 @@ package com.Calculator.Stock.Mapper;
 
 import com.Calculator.Stock.Entity.User;
 import com.Calculator.Stock.dto.UserDTO;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserDtoMapper {
 
-    public static UserDTO convertUserToUserDTO(User user) {
+    public UserDTO convertUserToUserDTO(User user) {
         return new UserDTO(
                 user.getId(),
                 user.getEmail(),
@@ -18,7 +20,7 @@ public class UserDtoMapper {
         );
     }
 
-    public static User convertUserDTOToUser(UserDTO userDTO) {
+    public User convertUserDTOToUser(UserDTO userDTO) {
         return new User(
                 userDTO.getId(),
                 userDTO.getEmail(),

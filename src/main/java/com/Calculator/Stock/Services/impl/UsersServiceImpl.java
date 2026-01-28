@@ -18,16 +18,17 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class UsersServiceImpl implements UsersService {
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserDtoMapper userDtoMapper;
+    private final JwtUtil jwtUtil;
 
     @Override
     public UserDTO RegisterUser(UserDTO userDTO) {
         if(userRepository.findByEmail(userDTO.getEmail()).isPresent()){
             throw new RuntimeException("User already exists");
         }
-        User user = UserDtoMapper.convertUserDTOToUser(userDTO);
+        User user = userDtoMapper.convertUserDTOToUser(userDTO);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Wallet wallet = new Wallet();
@@ -39,7 +40,7 @@ public class UsersServiceImpl implements UsersService {
         userRepository.save(user);
 
 
-        return UserDtoMapper.convertUserToUserDTO(user);
+        return userDtoMapper.convertUserToUserDTO(user);
     }
 
     @Override
@@ -48,13 +49,12 @@ public class UsersServiceImpl implements UsersService {
         if(!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
             throw new WrongUserCredentials("Incorrect password");
         }
-        String Token = jwtUtil.generateToken(loginRequest.getEmail());
-        return Token;
+          return jwtUtil.generateToken(loginRequest.getEmail());
     }
 
     @Override
     public UserDTO GetUser(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return  UserDtoMapper.convertUserToUserDTO(user);
+        return  userDtoMapper.convertUserToUserDTO(user);
     }
 }

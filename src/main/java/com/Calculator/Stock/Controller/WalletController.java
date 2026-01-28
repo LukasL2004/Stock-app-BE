@@ -7,6 +7,9 @@ import com.Calculator.Stock.Services.WalletsService;
 import com.Calculator.Stock.dto.FoundsRequestDTO;
 import com.Calculator.Stock.dto.WalletDTO;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.Calculator.Stock.Entity.User;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class WalletController {
  private final UserRepository userRepository;
  private final WalletsService walletService;
+ @Autowired
+ private final WalletDTOMapper walletDTOMapper;
 
 
 
@@ -35,7 +40,7 @@ public class WalletController {
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
 
         Wallet wallet = user.getWallet();
-        WalletDTO mappedWallet = WalletDTOMapper.WalletDTOMapper(wallet);
+        WalletDTO mappedWallet = walletDTOMapper.WalletDTOMapper(wallet);
 
         walletService.AddFounds(mappedWallet,amount.getAmount());
         return ResponseEntity.ok("Deposit successful");
@@ -46,7 +51,7 @@ public class WalletController {
         String email = userDetails.getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
         Wallet wallet = user.getWallet();
-        WalletDTO mappedWallet = WalletDTOMapper.WalletDTOMapper(wallet);
+        WalletDTO mappedWallet = walletDTOMapper.WalletDTOMapper(wallet);
 
         walletService.Withdraw(mappedWallet,amount.getAmount());
 

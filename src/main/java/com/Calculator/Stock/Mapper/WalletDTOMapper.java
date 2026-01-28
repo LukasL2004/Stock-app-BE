@@ -3,11 +3,12 @@ package com.Calculator.Stock.Mapper;
 import com.Calculator.Stock.Entity.Wallet;
 import com.Calculator.Stock.Repository.WalletRepository;
 import com.Calculator.Stock.dto.WalletDTO;
-
+import org.springframework.stereotype.Component;
+@Component
 public class WalletDTOMapper {
 
 
-    public static WalletDTO WalletDTOMapper(Wallet wallet) {
+    public WalletDTO WalletDTOMapper(Wallet wallet) {
         return new WalletDTO(wallet.getId(), wallet.getBalance(), wallet.getInvestment());
     }
 

@@ -4,7 +4,10 @@ import com.Calculator.Stock.Entity.Stock;
 import com.Calculator.Stock.dto.ChartDataDTO;
 import com.Calculator.Stock.dto.StocksDTO;
 import com.Calculator.Stock.dto.TwelveDataDTO;
+import org.springframework.stereotype.Component;
 
+
+@Component
 public class TwelveDataDTOMapper {
     public static Stock mapValueToStock(TwelveDataDTO.Values valuesDto,String status, String symbol) {
         if (valuesDto == null) {

@@ -21,6 +21,7 @@ public class WalletServiceImpl implements WalletsService {
 
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
+    private final WalletDTOMapper walletDTOMapper;
 
     @Override
     public WalletDTO AddFounds(WalletDTO dto, float amount) {
@@ -37,7 +38,7 @@ public class WalletServiceImpl implements WalletsService {
 
         walletRepository.save(wallet);
 
-        return WalletDTOMapper.WalletDTOMapper(wallet);
+        return walletDTOMapper.WalletDTOMapper(wallet);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class WalletServiceImpl implements WalletsService {
 
        walletRepository.save(wallet);
 
-        return WalletDTOMapper.WalletDTOMapper(wallet);
+        return walletDTOMapper.WalletDTOMapper(wallet);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class WalletServiceImpl implements WalletsService {
 
         Wallet wallet = user.getWallet();
 
-        return WalletDTOMapper.WalletDTOMapper(wallet);
+        return walletDTOMapper.WalletDTOMapper(wallet);
     }
 
 }

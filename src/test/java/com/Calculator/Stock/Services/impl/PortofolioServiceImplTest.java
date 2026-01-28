@@ -10,9 +10,7 @@ import com.Calculator.Stock.Repository.AuditLogRespository;
 import com.Calculator.Stock.Repository.PortofolioRepository;
 import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
-import com.Calculator.Stock.dto.BuyStockDTO;
-import com.Calculator.Stock.dto.PortofolioDTO;
-import com.Calculator.Stock.dto.SellStockDTO;
+import com.Calculator.Stock.dto.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -23,6 +21,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -179,12 +179,50 @@ class PortofolioServiceImplTest {
 
         SellStockDTO sell = new SellStockDTO(userID,symbol,120,200);
 
-        PortofolioDTO rezultat = portofolioService.SellToPortfolio(sell);
+        PortofolioDTO result = portofolioService.SellToPortfolio(sell);
 
-        assertThat(rezultat).isNotNull();
-        assertThat(rezultat.getSymbol()).isEqualTo(symbol);
+        assertThat(result).isNotNull();
+        assertThat(result.getSymbol()).isEqualTo(symbol);
 
 
+        }
+        @Test
+    void getTotal(){
+        String email = "test@test.com";
+        Long id = 1L;
+
+
+        Authentication auth = mock(Authentication.class);
+        SecurityContext context = mock(SecurityContext.class);
+
+        when(auth.getName()).thenReturn(email);
+        when(context.getAuthentication()).thenReturn(auth);
+
+        SecurityContextHolder.setContext(context);
+
+        User user = new User();
+        user.setEmail(email);
+        user.setId(id);
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        Portofolio portofolio = new Portofolio();
+
+        when(portofolioRepository.findAllByUser(user)).thenReturn(List.of(portofolio));
+
+        TotalDTO totalDTO = new TotalDTO();
+        List<PortfolioChartDTO> portfolioChartDTOList = new ArrayList<>();
+
+        totalDTO.setPortfolioChart(portfolioChartDTOList);
+        totalDTO.setUser_Id(id);
+        totalDTO.setTotal(120);
+
+     TotalDTO result = portofolioService.getTotal();
+
+     assertThat(result).isNotNull();
+
+
+    SecurityContextHolder.clearContext();
 
     }
 

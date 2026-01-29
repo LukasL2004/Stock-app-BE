@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -27,7 +28,7 @@ public class PortofolioController {
     PortofolioDTOMapper portofolioDTOMapper;
 
     @PostMapping("/buy")
-    public ResponseEntity<String> addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BuyStockDTO buyStockDTO ) {
+    public ResponseEntity<Map<String,String>> addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BuyStockDTO buyStockDTO ) {
 
        String email = userDetails.getUsername();
 
@@ -35,9 +36,9 @@ public class PortofolioController {
 
         buyStockDTO.setUser_id(user.getId());
         portofolioService.addToPortfolio(buyStockDTO);
-        return ResponseEntity.ok("Your purchase was a success");
+        return ResponseEntity.ok(Map.of("message","Your purchase was a success"));
     }@PostMapping("/sell")
-    public ResponseEntity<String> SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SellStockDTO sellStockDTO ) {
+    public ResponseEntity<Map<String,String>> SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SellStockDTO sellStockDTO ) {
 
        String email = userDetails.getUsername();
 
@@ -45,7 +46,7 @@ public class PortofolioController {
 
         sellStockDTO.setUser_id(user.getId());
         portofolioService.SellToPortfolio(sellStockDTO);
-        return ResponseEntity.ok("The withdraw was a success");
+        return ResponseEntity.ok(Map.of("message","The withdraw was a success"));
     }
 
     @GetMapping("/{symbol}")

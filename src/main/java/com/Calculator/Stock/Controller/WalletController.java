@@ -16,6 +16,8 @@ import com.Calculator.Stock.Entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/wallet")
@@ -34,7 +36,7 @@ public class WalletController {
     }
 
     @PostMapping("/AddFounds")
-    public ResponseEntity<String> AddFounds(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
+    public ResponseEntity<Map<String,String>> AddFounds(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
         String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
@@ -43,11 +45,11 @@ public class WalletController {
         WalletDTO mappedWallet = walletDTOMapper.WalletDTOMapper(wallet);
 
         walletService.AddFounds(mappedWallet,amount.getAmount());
-        return ResponseEntity.ok("Deposit successful");
+        return ResponseEntity.ok(Map.of("message","Deposit successful"));
     }
 
     @PostMapping("/Withdraw")
-    public ResponseEntity<String> Withdraw(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
+    public ResponseEntity<Map<String,String>> Withdraw(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
         String email = userDetails.getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
         Wallet wallet = user.getWallet();
@@ -55,6 +57,6 @@ public class WalletController {
 
         walletService.Withdraw(mappedWallet,amount.getAmount());
 
-        return ResponseEntity.ok("Withdraw successful");
+        return ResponseEntity.ok(Map.of("message","Withdraw successful"));
     }
 }

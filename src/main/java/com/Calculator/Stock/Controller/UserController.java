@@ -20,11 +20,11 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserDTO user) {
+    public ResponseEntity<Map<String,String>> registerUser(@RequestBody UserDTO user) {
 
         usersService.RegisterUser(user);
 
-        return ResponseEntity.ok("User registered successfully") ;
+        return ResponseEntity.ok(Map.of("message","User registered successfully")) ;
     }
 
     @GetMapping

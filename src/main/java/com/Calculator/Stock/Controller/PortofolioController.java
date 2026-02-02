@@ -11,6 +11,7 @@ import com.Calculator.Stock.dto.SellStockDTO;
 import com.Calculator.Stock.dto.TotalDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,9 @@ public class PortofolioController {
 
     private final PortofolioService portofolioService;
     private final UserRepository userRepository;
-    PortofolioDTOMapper portofolioDTOMapper;
+    private final PortofolioDTOMapper portofolioDTOMapper;
+    private final SimpMessagingTemplate messagingTemplate;
+
 
     @PostMapping("/buy")
     public ResponseEntity<Map<String,String>> addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BuyStockDTO buyStockDTO ) {
@@ -36,8 +39,12 @@ public class PortofolioController {
 
         buyStockDTO.setUser_id(user.getId());
         portofolioService.addToPortfolio(buyStockDTO);
+        messagingTemplate.convertAndSendToUser(email,"/queue/updates",Map.of("message","Your purchase was a success" ,"Status" , "Success"));
+
         return ResponseEntity.ok(Map.of("message","Your purchase was a success"));
-    }@PostMapping("/sell")
+    }
+
+    @PostMapping("/sell")
     public ResponseEntity<Map<String,String>> SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SellStockDTO sellStockDTO ) {
 
        String email = userDetails.getUsername();
@@ -46,6 +53,9 @@ public class PortofolioController {
 
         sellStockDTO.setUser_id(user.getId());
         portofolioService.SellToPortfolio(sellStockDTO);
+
+        messagingTemplate.convertAndSendToUser(email,"/queue/updates",Map.of("message","Your sell was a success" ,"Status" , "Success"));
+
         return ResponseEntity.ok(Map.of("message","The withdraw was a success"));
     }
 

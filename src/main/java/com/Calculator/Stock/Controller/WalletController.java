@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.Calculator.Stock.Entity.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,8 +25,8 @@ import java.util.Map;
 public class WalletController {
  private final UserRepository userRepository;
  private final WalletsService walletService;
- @Autowired
  private final WalletDTOMapper walletDTOMapper;
+ private final SimpMessagingTemplate messagingTemplate;
 
 
 
@@ -45,6 +46,9 @@ public class WalletController {
         WalletDTO mappedWallet = walletDTOMapper.WalletDTOMapper(wallet);
 
         walletService.AddFounds(mappedWallet,amount.getAmount());
+
+        messagingTemplate.convertAndSendToUser(email,"/topic/founds",Map.of("message","Wallet added successfully","status","OK"));
+
         return ResponseEntity.ok(Map.of("message","Deposit successful"));
     }
 
@@ -56,6 +60,8 @@ public class WalletController {
         WalletDTO mappedWallet = walletDTOMapper.WalletDTOMapper(wallet);
 
         walletService.Withdraw(mappedWallet,amount.getAmount());
+
+        messagingTemplate.convertAndSendToUser(email,"/topic/founds",Map.of("message","Withdraw successfully","status","OK"));
 
         return ResponseEntity.ok(Map.of("message","Withdraw successful"));
     }

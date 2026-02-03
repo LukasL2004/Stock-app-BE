@@ -39,7 +39,7 @@ public class PortofolioController {
 
         buyStockDTO.setUser_id(user.getId());
         portofolioService.addToPortfolio(buyStockDTO);
-        messagingTemplate.convertAndSendToUser(email,"/queue/updates",Map.of("message","Your purchase was a success" ,"Status" , "Success"));
+        messagingTemplate.convertAndSendToUser(email,"/topic/user/"+ user.getId() ,Map.of("message","Your purchase was a success" ,"Status" , "Success"));
 
         return ResponseEntity.ok(Map.of("message","Your purchase was a success"));
     }
@@ -54,7 +54,7 @@ public class PortofolioController {
         sellStockDTO.setUser_id(user.getId());
         portofolioService.SellToPortfolio(sellStockDTO);
 
-        messagingTemplate.convertAndSendToUser(email,"/queue/updates",Map.of("message","Your sell was a success" ,"Status" , "Success"));
+        messagingTemplate.convertAndSendToUser(email,"/topic/user/"+ user.getId() ,Map.of("message","Your sell was a success" ,"Status" , "Success"));
 
         return ResponseEntity.ok(Map.of("message","The withdraw was a success"));
     }

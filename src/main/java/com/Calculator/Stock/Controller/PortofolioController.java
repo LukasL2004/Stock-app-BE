@@ -1,6 +1,4 @@
 package com.Calculator.Stock.Controller;
-
-import com.Calculator.Stock.Entity.Portofolio;
 import com.Calculator.Stock.Entity.User;
 import com.Calculator.Stock.Mapper.PortofolioDTOMapper;
 import com.Calculator.Stock.Repository.UserRepository;
@@ -17,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -39,7 +36,7 @@ public class PortofolioController {
 
         buyStockDTO.setUser_id(user.getId());
         portofolioService.addToPortfolio(buyStockDTO);
-        messagingTemplate.convertAndSendToUser(email,"/topic/user/"+ user.getId() ,Map.of("message","Your purchase was a success" ,"Status" , "Success"));
+        messagingTemplate.convertAndSend("/topic/"+ email.toLowerCase().trim() ,Map.of("message","Your purchase was a success" ,"Status" , "Success"));
 
         return ResponseEntity.ok(Map.of("message","Your purchase was a success"));
     }
@@ -54,7 +51,7 @@ public class PortofolioController {
         sellStockDTO.setUser_id(user.getId());
         portofolioService.SellToPortfolio(sellStockDTO);
 
-        messagingTemplate.convertAndSendToUser(email,"/topic/user/"+ user.getId() ,Map.of("message","Your sell was a success" ,"Status" , "Success"));
+        messagingTemplate.convertAndSend("/topic/"+ email.toLowerCase().trim() ,Map.of("message","Your sell was a success" ,"Status" , "Success"));
 
         return ResponseEntity.ok(Map.of("message","The withdraw was a success"));
     }

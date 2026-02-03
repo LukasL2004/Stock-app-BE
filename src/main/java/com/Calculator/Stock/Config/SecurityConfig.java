@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 2. Configurează regulile de autorizare
                 .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         // Permite accesul PUBLIC (fără token) la login și register
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                         .requestMatchers("/error").permitAll()

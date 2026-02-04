@@ -47,7 +47,7 @@ public class WalletController {
 
         walletService.AddFounds(mappedWallet,amount.getAmount());
 
-        messagingTemplate.convertAndSendToUser(email,"/topic/founds",Map.of("message","Wallet added successfully","status","OK"));
+        messagingTemplate.convertAndSend("/topic/"+ email.toLowerCase().trim() ,Map.of("message","Wallet added successfully","status","OK"));
 
         return ResponseEntity.ok(Map.of("message","Deposit successful"));
     }
@@ -61,7 +61,7 @@ public class WalletController {
 
         walletService.Withdraw(mappedWallet,amount.getAmount());
 
-        messagingTemplate.convertAndSendToUser(email,"/topic/founds",Map.of("message","Withdraw successfully","status","OK"));
+        messagingTemplate.convertAndSend("/topic/"+ email.toLowerCase().trim(),Map.of("message","Withdraw successfully","status","OK"));
 
         return ResponseEntity.ok(Map.of("message","Withdraw successful"));
     }

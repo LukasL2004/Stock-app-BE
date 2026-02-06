@@ -9,6 +9,7 @@ import com.Calculator.Stock.Repository.AuditLogRespository;
 import com.Calculator.Stock.Repository.PortofolioRepository;
 import com.Calculator.Stock.Repository.StockRepository;
 import com.Calculator.Stock.Repository.UserRepository;
+import com.Calculator.Stock.Services.EmailSenderService;
 import com.Calculator.Stock.Services.PortofolioService;
 import com.Calculator.Stock.dto.*;
 import com.Calculator.Stock.exception.InsufficientFundsException;
@@ -33,7 +34,7 @@ public class PortofolioServiceImpl implements PortofolioService {
     private final StockRepository stockRepository;
     private final AuditLogRespository auditLogRespository;
     private final AuditLogDTOMapper auditLogDTOMapper;
-
+    private final EmailSenderService emailSenderService;
 
 
 
@@ -105,6 +106,8 @@ public class PortofolioServiceImpl implements PortofolioService {
 
 
         }
+
+        emailSenderService.sendInfoEmail(user.getEmail(),"Thank you for your purchase","The stock "+ buyStockDTO.getSymbol()+" has been purchased successfully"+ "\n\n"+ "The amount ("+buyStockDTO.getAmountToInvest() + ") is already in your balance have a nice day and thank your for your purchase.");
 
         Portofolio savedPortofolio = portofolioRepository.save(portofolio);
 

@@ -4,9 +4,11 @@ import com.Calculator.Stock.Entity.User;
 import com.Calculator.Stock.Entity.Wallet;
 import com.Calculator.Stock.Mapper.UserDtoMapper;
 import com.Calculator.Stock.Repository.UserRepository;
+import com.Calculator.Stock.Services.EmailSenderService;
 import com.Calculator.Stock.Services.UsersService;
 import com.Calculator.Stock.Util.JwtUtil;
 import com.Calculator.Stock.dto.LoginRequest;
+import com.Calculator.Stock.dto.ResetPasswordDTO;
 import com.Calculator.Stock.dto.UserDTO;
 
 import com.Calculator.Stock.exception.ResourceNotFoundException;
@@ -15,6 +17,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+
 @Service
 @AllArgsConstructor
 public class UsersServiceImpl implements UsersService {
@@ -22,6 +26,7 @@ public class UsersServiceImpl implements UsersService {
     private final PasswordEncoder passwordEncoder;
     private final UserDtoMapper userDtoMapper;
     private final JwtUtil jwtUtil;
+    private final EmailSenderService emailSenderService;
 
     @Override
     public UserDTO RegisterUser(UserDTO userDTO) {
@@ -39,6 +44,12 @@ public class UsersServiceImpl implements UsersService {
 
         userRepository.save(user);
 
+        emailSenderService.sendInfoEmail(
+                userDTO.getEmail(),
+                "Welcome to WealthGrow",
+                "Thanks for choosing WealthGrow " + userDTO.getEmail() + "\n\n" +
+                        "We are pleased to inform you that our application is made for experienced investors as well as beginners starting their journey."
+        );
 
         return userDtoMapper.convertUserToUserDTO(user);
     }
@@ -56,5 +67,19 @@ public class UsersServiceImpl implements UsersService {
     public UserDTO GetUser(String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return  userDtoMapper.convertUserToUserDTO(user);
+    }
+
+    @Override
+    public UserDTO ResetPassword(ResetPasswordDTO resetPasswordDTO) {
+        User user = userRepository.findByEmail(resetPasswordDTO.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        SecureRandom random = new SecureRandom();
+        int code = 100000 + random.nextInt(900000);
+        emailSenderService.sendInfoEmail(user.getEmail(),"Reset password code", "Your code: "+ code);
+
+        if(code == resetPasswordDTO.getCode()){
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+        }
+        userRepository.save(user);
+        return userDtoMapper.convertUserToUserDTO(user);
     }
 }

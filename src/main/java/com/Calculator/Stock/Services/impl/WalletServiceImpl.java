@@ -5,6 +5,7 @@ import com.Calculator.Stock.Entity.Wallet;
 import com.Calculator.Stock.Mapper.WalletDTOMapper;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Repository.WalletRepository;
+import com.Calculator.Stock.Services.EmailSenderService;
 import com.Calculator.Stock.Services.WalletsService;
 import com.Calculator.Stock.dto.WalletDTO;
 import com.Calculator.Stock.exception.InsufficientFundsException;
@@ -22,6 +23,7 @@ public class WalletServiceImpl implements WalletsService {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final WalletDTOMapper walletDTOMapper;
+    private final EmailSenderService emailSenderService;
 
     @Override
     public WalletDTO AddFounds(WalletDTO dto, float amount) {
@@ -37,6 +39,17 @@ public class WalletServiceImpl implements WalletsService {
         wallet.setInvestment(wallet.getInvestment()+amount);
 
         walletRepository.save(wallet);
+
+        emailSenderService.sendInfoEmail(wallet.getUser().getEmail(),"Thank your for your deposit","Hello,\n\n" +
+                        "We are writing to confirm that a deposit has been successfully processed into your account.\n\n" +
+                        "Transaction Details:\n" +
+                        "--------------------------------\n" +
+                        "Amount Added:      "+amount+"\n" +
+                        "New Wallet Balance:      "+wallet.getBalance()+"\n" +
+                        "--------------------------------\n\n" +
+                        "Thank you for trusting us with your investments.\n\n" +
+                        "Best Regards,\n" +
+                        "The WealthGrow Team");
 
         return walletDTOMapper.WalletDTOMapper(wallet);
     }

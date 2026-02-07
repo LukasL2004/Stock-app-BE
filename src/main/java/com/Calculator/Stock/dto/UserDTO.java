@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,6 +21,8 @@ public class UserDTO {
     private String password;
     private String firstName;
     private String lastName;
+    private String resetPasswordToken;
+    private LocalDateTime resetPasswordTokenTime;
     private Wallet wallet;
     private List<Portofolio> portofolio;
     private List<AuditLog> auditLogs;

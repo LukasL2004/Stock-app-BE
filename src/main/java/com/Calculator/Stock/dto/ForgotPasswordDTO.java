@@ -2,13 +2,13 @@ package com.Calculator.Stock.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
-public class ResetPasswordDTO {
-private String email;
-private String password;
-private String code;
+@NoArgsConstructor
+public class ForgotPasswordDTO {
+    String email;
 }

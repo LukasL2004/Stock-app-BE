@@ -14,6 +14,8 @@ public class UserDtoMapper {
                 user.getPassword(),
                 user.getFirstName(),
                 user.getLastName(),
+                user.getResetPasswordToken(),
+                user.getResetPasswordTokenTime(),
                 user.getWallet(),
                 user.getPortofolio(),
                 user.getAuditLogs()
@@ -27,6 +29,8 @@ public class UserDtoMapper {
                 userDTO.getPassword(),
                 userDTO.getFirstName(),
                 userDTO.getLastName(),
+                userDTO.getResetPasswordToken(),
+                userDTO.getResetPasswordTokenTime(),
                 userDTO.getWallet(),
                 userDTO.getPortofolio(),
                 userDTO.getAuditLogs()

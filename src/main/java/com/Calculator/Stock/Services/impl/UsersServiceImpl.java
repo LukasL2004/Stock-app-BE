@@ -7,6 +7,7 @@ import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.EmailSenderService;
 import com.Calculator.Stock.Services.UsersService;
 import com.Calculator.Stock.Util.JwtUtil;
+import com.Calculator.Stock.dto.ForgotPasswordDTO;
 import com.Calculator.Stock.dto.LoginRequest;
 import com.Calculator.Stock.dto.ResetPasswordDTO;
 import com.Calculator.Stock.dto.UserDTO;
@@ -18,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -70,16 +73,37 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public void ForgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
+        User user = userRepository.findByEmail(forgotPasswordDTO.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        int code = new Random().nextInt(999999);
+        String codeFormatted = String.format("%06d", code);
+        user.setResetPasswordToken(codeFormatted);
+        user.setResetPasswordTokenTime(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(user);
+        emailSenderService.sendInfoEmail(forgotPasswordDTO.getEmail(),"Reset Password Code", "Your reset code is:"+ codeFormatted);
+
+    }
+
+    @Override
     public UserDTO ResetPassword(ResetPasswordDTO resetPasswordDTO) {
         User user = userRepository.findByEmail(resetPasswordDTO.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        SecureRandom random = new SecureRandom();
-        int code = 100000 + random.nextInt(900000);
-        emailSenderService.sendInfoEmail(user.getEmail(),"Reset password code", "Your code: "+ code);
-
-        if(code == resetPasswordDTO.getCode()){
-        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+        if(user.getResetPasswordToken() == null){
+            throw new ResourceNotFoundException("No reset request found. Please request a new code.");
         }
+        if(user.getResetPasswordTokenTime().isBefore(LocalDateTime.now())){
+            throw new ResourceNotFoundException("Reset password token expired");
+        }
+        if(!user.getResetPasswordToken().equals(resetPasswordDTO.getCode())){
+            throw new ResourceNotFoundException("Reset password token does not match");
+        }
+        user.setPassword(passwordEncoder.encode(resetPasswordDTO.getPassword()));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenTime(null);
         userRepository.save(user);
-        return userDtoMapper.convertUserToUserDTO(user);
+
+        emailSenderService.sendInfoEmail(resetPasswordDTO.getEmail(),"Security Alert: Password Changed", "Your password has been successfully updated.\n\n" +
+                "If you did not perform this action, please contact our support team immediately as your account might be compromised.\n\n");
+    return userDtoMapper.convertUserToUserDTO(user);
     }
 }

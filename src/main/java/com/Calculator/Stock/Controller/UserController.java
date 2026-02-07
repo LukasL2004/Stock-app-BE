@@ -1,6 +1,8 @@
 package com.Calculator.Stock.Controller;
 import com.Calculator.Stock.Services.UsersService;
+import com.Calculator.Stock.dto.ForgotPasswordDTO;
 import com.Calculator.Stock.dto.LoginRequest;
+import com.Calculator.Stock.dto.ResetPasswordDTO;
 import com.Calculator.Stock.dto.UserDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +41,15 @@ public class UserController {
         Map<String,String> map = new HashMap<>();
         map.put("token",JwtToken);
         return ResponseEntity.ok(map);
+    }
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestBody ForgotPasswordDTO forgotPasswordDTO) {
+        usersService.ForgotPassword(forgotPasswordDTO);
+        return ResponseEntity.ok("Check your email for the reset code");
+    }
+    @PutMapping("/resetPassword")
+    public ResponseEntity<Map<String,String>> ResetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
+        usersService.ResetPassword(resetPasswordDTO);
+        return ResponseEntity.ok(Map.of("message","Password changed successfully"));
     }
 }

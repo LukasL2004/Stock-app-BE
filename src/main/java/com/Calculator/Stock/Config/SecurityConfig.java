@@ -35,37 +35,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Dezactivează CSRF (necesar pentru API-uri stateless cu JWT)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                // 2. Configurează regulile de autorizare
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ws/**").permitAll()
-                        // Permite accesul PUBLIC (fără token) la login și register
-                        .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                        .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        // TOATE celelalte endpoint-uri necesită AUTENTIFICARE (token JWT valid)
                         .anyRequest().authenticated()
                 )
-                // 3. Setează sesiunile ca STATELESS (nu mai folosim sesiuni, ci JWT)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 4. Setează AuthenticationProvider (verifică username + password)
                 .authenticationProvider(authenticationProvider())
 
-                // 5. ADAUGĂ FILTRUL JWT înainte de filtrul de autentificare standard
-                // Filtrul JWT verifică token-ul ÎNAINTE ca Spring Security să verifice credențialele
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /**
-     * AuthenticationProvider - Folosit pentru a verifica username + password la login
-     * Lucrează cu CustomUserDetailsService pentru a încărca user-ul din DB
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -74,19 +62,11 @@ public class SecurityConfig {
         return authProvider;
     }
 
-
-    /**
-     * PasswordEncoder - Criptează parolele cu BCrypt
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * AuthenticationManager - Necesar pentru a autentifica user-ul la login
-     * Folosit în UserService.login()
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -32,6 +33,12 @@ public class User {
 
     @Column(nullable = false)
     private String lastName;
+
+    @Column(nullable = true)
+    private String resetPasswordToken;
+
+    @Column(nullable = true)
+    private LocalDateTime resetPasswordTokenTime;
 
     @OneToOne(mappedBy = "user",cascade = CascadeType.ALL)
     private Wallet wallet;

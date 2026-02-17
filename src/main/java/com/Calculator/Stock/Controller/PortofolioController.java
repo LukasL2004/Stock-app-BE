@@ -3,10 +3,7 @@ import com.Calculator.Stock.Entity.User;
 import com.Calculator.Stock.Mapper.PortofolioDTOMapper;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.PortofolioService;
-import com.Calculator.Stock.dto.BuyStockDTO;
-import com.Calculator.Stock.dto.PortofolioDTO;
-import com.Calculator.Stock.dto.SellStockDTO;
-import com.Calculator.Stock.dto.TotalDTO;
+import com.Calculator.Stock.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -63,5 +60,10 @@ public class PortofolioController {
     @GetMapping("/total")
     public TotalDTO getTotal(@AuthenticationPrincipal UserDetails userDetails) {
         return portofolioService.getTotal();
+    }
+
+    @GetMapping("/profit/{symbol}")
+    public DailyProfitDTO getProfit(@AuthenticationPrincipal UserDetails userDetails , @PathVariable String symbol) {
+        return portofolioService.getDailyProfit(symbol);
     }
 }

@@ -18,11 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +32,10 @@ public class PortofolioServiceImpl implements PortofolioService {
     private final AuditLogDTOMapper auditLogDTOMapper;
     private final EmailSenderService emailSenderService;
 
+
+    private final List<String> targetSymbols = Arrays.asList(
+            "AAPL", "TSLA", "GOOGL", "MSFT", "AMZN", "NVDA", "META", "NFLX"
+    );
 
 
     @Override
@@ -215,6 +215,40 @@ public class PortofolioServiceImpl implements PortofolioService {
 
 
         return totalDTO;
+    }
+
+    @Override
+    public DailyProfitDTO getDailyProfit(String symbol) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Portofolio portofolio1 = portofolioRepository.findByUserAndSymbol(user,symbol).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        List<Portofolio> portofolio = portofolioRepository.findAllByUser(user);
+
+        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(symbol);
+
+        float total =0;
+        float dailyProfit = (stock.getPrice() - stock.getOpen())*portofolio1.getShares();
+        float dailyProfitPercentage = ((stock.getPrice() - stock.getOpen())/stock.getOpen())*100;
+        float totalDailyProfit = 0;
+        float totalDailyProfitPercentage = 0;
+        float totalValAtOpening = 0;
+
+        for(Portofolio p: portofolio){
+
+            Stock stock1 = stockRepository.findTopBySymbolOrderByDateDesc(p.getSymbol());
+            totalDailyProfit += (stock1.getPrice() - stock1.getOpen())*p.getShares();
+            totalValAtOpening += stock1.getOpen() * p.getShares();
+        }
+
+        if(totalValAtOpening != 0){
+        totalDailyProfitPercentage = (totalDailyProfit/totalValAtOpening)*100;
+        }else{
+            throw new ResourceNotFoundException("Sorry an error occurred");
+        }
+
+        return  new DailyProfitDTO(user.getId(),dailyProfit,dailyProfitPercentage,totalDailyProfit,totalDailyProfitPercentage);
     }
 
 

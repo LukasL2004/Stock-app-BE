@@ -53,14 +53,19 @@ public class PortofolioServiceImpl implements PortofolioService {
         if (buyStockDTO.getCurrentPrice() <= 0) {
             throw new InsufficientFundsException("Current price must be greater than 0");
         }
+        if(buyStockDTO.getAmountToInvest() > user.getWallet().getBalance()) {
+            throw new InsufficientFundsException("Insufficient Funds");
+        }
 
         float shares = buyStockDTO.getAmountToInvest() / buyStockDTO.getCurrentPrice();
 
         if(portofolioAlrExt.isPresent()) {
             portofolio = portofolioAlrExt.get();
 
+
             float newAmountOwned = portofolio.getAmountOwned() + buyStockDTO.getAmountToInvest();
             float totalShares = portofolio.getShares() + shares;
+            user.getWallet().setBalance(user.getWallet().getBalance() - buyStockDTO.getAmountToInvest());
 
             if (totalShares > 0) {
                 float newAverageValue = newAmountOwned / totalShares;

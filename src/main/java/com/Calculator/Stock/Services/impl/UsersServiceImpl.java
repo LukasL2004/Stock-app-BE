@@ -39,7 +39,10 @@ public class UsersServiceImpl implements UsersService {
         User user = userDtoMapper.convertUserDTOToUser(userDTO);
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
         Wallet wallet = new Wallet();
+
         wallet.setUser(user);
         wallet.setBalance(0);
         wallet.setInvestment(0);

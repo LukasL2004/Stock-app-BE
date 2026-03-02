@@ -110,7 +110,7 @@ class UsersServiceImplTest {
         when(userRepository.findByEmail("test@test.com")).thenReturn(Optional.of(user));
         when(userDtoMapper.convertUserToUserDTO(user)).thenReturn(userDTO);
 
-        UserDTO response = usersService.GetUser("test@test.com");
+        UserDTO response = usersService.GetUser();
 
         assertThat(response).isNotNull();
     }

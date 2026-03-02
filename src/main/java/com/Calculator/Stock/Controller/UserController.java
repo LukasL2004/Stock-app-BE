@@ -31,8 +31,7 @@ public class UserController {
 
     @GetMapping
     public UserDTO getUserByEmail(@AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        return usersService.GetUser(email);
+        return usersService.GetUser();
     }
 
     @PostMapping("/login")

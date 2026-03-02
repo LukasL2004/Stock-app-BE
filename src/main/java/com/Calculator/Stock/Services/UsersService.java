@@ -11,9 +11,10 @@ import org.springframework.stereotype.Service;
 public interface UsersService {
     UserDTO RegisterUser(UserDTO user);
     String LoginUser(LoginRequest loginRequest);
-    UserDTO GetUser(String email);
+    UserDTO GetUser();
     void ForgotPassword(ForgotPasswordDTO forgotPasswordDTO);
     UserDTO ResetPassword(ResetPasswordDTO resetPasswordDTO);
+
 
 
 }

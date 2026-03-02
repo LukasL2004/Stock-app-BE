@@ -15,6 +15,8 @@ import com.Calculator.Stock.dto.UserDTO;
 import com.Calculator.Stock.exception.ResourceNotFoundException;
 import com.Calculator.Stock.exception.WrongUserCredentials;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -70,9 +72,14 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public UserDTO GetUser(String email) {
+    public UserDTO GetUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return  userDtoMapper.convertUserToUserDTO(user);
+
+        return userDtoMapper.convertUserToUserDTO(user);
+
     }
 
     @Override

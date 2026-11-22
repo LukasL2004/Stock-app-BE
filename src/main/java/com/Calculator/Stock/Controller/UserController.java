@@ -4,6 +4,7 @@ import com.Calculator.Stock.dto.ForgotPasswordDTO;
 import com.Calculator.Stock.dto.LoginRequest;
 import com.Calculator.Stock.dto.ResetPasswordDTO;
 import com.Calculator.Stock.dto.UserDTO;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,7 +23,7 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String,String>> registerUser(@RequestBody UserDTO user) {
+    public ResponseEntity<Map<String,String>> registerUser(@Valid @RequestBody UserDTO user) {
 
         usersService.RegisterUser(user);
 
@@ -35,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-   public ResponseEntity<Map<String,String>> LoginUser(@RequestBody LoginRequest loginRequest) {
+   public ResponseEntity<Map<String,String>> LoginUser(@Valid @RequestBody LoginRequest loginRequest) {
         String JwtToken = usersService.LoginUser(loginRequest);
         Map<String,String> map = new HashMap<>();
         map.put("token",JwtToken);

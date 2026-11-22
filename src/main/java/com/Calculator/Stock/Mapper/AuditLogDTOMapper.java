@@ -17,6 +17,7 @@ public class AuditLogDTOMapper {
                 auditLog.getDate(),
                 auditLog.getPrice(),
                 auditLog.getShares(),
+                auditLog.getAction(),
                 userId
                 );
     }public AuditLog auditLogDTOToAuditLog(AuditLogDTO auditLog, User user) {
@@ -27,6 +28,7 @@ public class AuditLogDTOMapper {
                 auditLog.getDate(),
                 auditLog.getPrice(),
                 auditLog.getShares(),
+                auditLog.getAction(),
                 user
 
                 );

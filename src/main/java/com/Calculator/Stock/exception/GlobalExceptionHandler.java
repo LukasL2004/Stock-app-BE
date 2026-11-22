@@ -1,7 +1,9 @@
 package com.Calculator.Stock.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -45,6 +48,15 @@ public class GlobalExceptionHandler {
     return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
 }
 
+@ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiError> userAlreadyExists(UserAlreadyExistsException e) {
+    ApiError apiError = new ApiError(
+            e.getMessage(),
+            HttpStatus.CONFLICT.value()
+    );
+    return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+}
+
 @ExceptionHandler
 public ResponseEntity<ApiError> WrongCredentials(WrongUserCredentials e){
     ApiError apiError = new ApiError(
@@ -54,10 +66,20 @@ public ResponseEntity<ApiError> WrongCredentials(WrongUserCredentials e){
     return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
 }
 
+@ExceptionHandler(BadCredentialsException.class)
+public ResponseEntity<ApiError> badCredentials(BadCredentialsException e){
+    ApiError apiError = new ApiError(
+            "Incorrect email or password",
+            HttpStatus.UNAUTHORIZED.value()
+    );
+    return new ResponseEntity<>(apiError, HttpStatus.UNAUTHORIZED);
+}
+
 @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> globalException(Exception e) {
+    log.error("Unhandled exception while processing request", e);
     ApiError apiError = new ApiError(
-            "Internal error appeared " + e.getMessage(),
+            "An internal error occurred. Please try again later.",
             HttpStatus.INTERNAL_SERVER_ERROR.value()
     );
     return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);

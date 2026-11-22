@@ -13,6 +13,7 @@ import com.Calculator.Stock.dto.ResetPasswordDTO;
 import com.Calculator.Stock.dto.UserDTO;
 
 import com.Calculator.Stock.exception.ResourceNotFoundException;
+import com.Calculator.Stock.exception.UserAlreadyExistsException;
 import com.Calculator.Stock.exception.WrongUserCredentials;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -33,10 +33,12 @@ public class UsersServiceImpl implements UsersService {
     private final JwtUtil jwtUtil;
     private final EmailSenderService emailSenderService;
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     @Override
     public UserDTO RegisterUser(UserDTO userDTO) {
         if(userRepository.findByEmail(userDTO.getEmail()).isPresent()){
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
         User user = userDtoMapper.convertUserDTOToUser(userDTO);
 
@@ -86,7 +88,7 @@ public class UsersServiceImpl implements UsersService {
     public void ForgotPassword(ForgotPasswordDTO forgotPasswordDTO) {
         User user = userRepository.findByEmail(forgotPasswordDTO.getEmail()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        int code = new Random().nextInt(999999);
+        int code = SECURE_RANDOM.nextInt(1000000);
         String codeFormatted = String.format("%06d", code);
         user.setResetPasswordToken(codeFormatted);
         user.setResetPasswordTokenTime(LocalDateTime.now().plusMinutes(5));

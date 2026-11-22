@@ -5,6 +5,7 @@ import com.Calculator.Stock.Entity.Wallet;
 import com.Calculator.Stock.Mapper.WalletDTOMapper;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Repository.WalletRepository;
+import com.Calculator.Stock.Services.EmailSenderService;
 import com.Calculator.Stock.dto.WalletDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,9 @@ class WalletServiceImplTest {
     @Mock
     WalletDTOMapper walletDTOMapper;
 
+    @Mock
+    EmailSenderService emailSenderService;
+
     @InjectMocks
     WalletServiceImpl walletServiceImpl;
 
@@ -36,8 +40,12 @@ class WalletServiceImplTest {
     @Test
     void AddFounds(){
         int id = 1;
+        User user = new User();
+        user.setEmail("test@test.com");
         Wallet wallet = new Wallet();
         wallet.setId(id);
+        wallet.setBalance(5.0f);
+        wallet.setUser(user);
         float amount = 10.0f;
 
 
@@ -52,6 +60,7 @@ class WalletServiceImplTest {
         WalletDTO response = walletServiceImpl.AddFounds(dto,amount);
 
         assertThat(response).isNotNull();
+        assertThat(wallet.getBalance()).isEqualTo(15.0f);
 
     }
 
@@ -74,6 +83,7 @@ class WalletServiceImplTest {
         WalletDTO response =  walletServiceImpl.Withdraw(dto,amount);
 
         assertThat(response).isNotNull();
+        assertThat(wallet.getBalance()).isEqualTo(90.0f);
     }
 
     @Test

@@ -27,6 +27,8 @@ public class AuditLog {
     private float price;
     @Column(nullable = false)
     private float shares;
+    @Column(nullable = true)
+    private String action;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")

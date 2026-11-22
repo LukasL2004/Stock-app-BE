@@ -6,6 +6,7 @@ import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.WalletsService;
 import com.Calculator.Stock.dto.FoundsRequestDTO;
 import com.Calculator.Stock.dto.WalletDTO;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class WalletController {
     }
 
     @PostMapping("/AddFounds")
-    public ResponseEntity<Map<String,String>> AddFounds(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
+    public ResponseEntity<Map<String,String>> AddFounds(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody FoundsRequestDTO amount) {
         String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
@@ -53,7 +54,7 @@ public class WalletController {
     }
 
     @PostMapping("/Withdraw")
-    public ResponseEntity<Map<String,String>> Withdraw(@AuthenticationPrincipal UserDetails userDetails, @RequestBody FoundsRequestDTO amount) {
+    public ResponseEntity<Map<String,String>> Withdraw(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody FoundsRequestDTO amount) {
         String email = userDetails.getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() ->new RuntimeException("User not found"));
         Wallet wallet = user.getWallet();

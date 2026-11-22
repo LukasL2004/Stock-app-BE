@@ -14,5 +14,9 @@ import java.util.List;
 public class TotalDTO {
 private Long user_Id;
 private float total;
+private float investedValue;
+private float marketValue;
+private float totalProfit;
+private float balance;
 List<PortfolioChartDTO> portfolioChart;
 }

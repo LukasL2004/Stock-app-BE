@@ -14,5 +14,7 @@ public class PortfolioChartDTO {
     private String symbol;
     private float value;
     private float percentage;
+    private float marketValue;
+    private float profit;
 
 }

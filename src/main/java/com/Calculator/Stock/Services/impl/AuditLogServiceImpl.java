@@ -54,7 +54,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        List<AuditLog> auditLog = auditLogRespository.findAllByUser(user);
+        List<AuditLog> auditLog = auditLogRespository.findAllByUserOrderByIdDesc(user);
 
         return auditLog.stream().map(auditLogDTOMapper::auditLogToAuditLogDTO).collect(Collectors.toList());
     }

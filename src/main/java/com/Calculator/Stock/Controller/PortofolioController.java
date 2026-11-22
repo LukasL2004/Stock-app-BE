@@ -4,6 +4,7 @@ import com.Calculator.Stock.Mapper.PortofolioDTOMapper;
 import com.Calculator.Stock.Repository.UserRepository;
 import com.Calculator.Stock.Services.PortofolioService;
 import com.Calculator.Stock.dto.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,7 +26,7 @@ public class PortofolioController {
 
 
     @PostMapping("/buy")
-    public ResponseEntity<Map<String,String>> addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody BuyStockDTO buyStockDTO ) {
+    public ResponseEntity<Map<String,String>> addToPortfolio(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody BuyStockDTO buyStockDTO ) {
 
        String email = userDetails.getUsername();
 
@@ -39,7 +40,7 @@ public class PortofolioController {
     }
 
     @PostMapping("/sell")
-    public ResponseEntity<Map<String,String>> SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SellStockDTO sellStockDTO ) {
+    public ResponseEntity<Map<String,String>> SellFromPortofolio(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody SellStockDTO sellStockDTO ) {
 
        String email = userDetails.getUsername();
 

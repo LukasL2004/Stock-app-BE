@@ -3,6 +3,7 @@ package com.Calculator.Stock.Services.impl;
 import com.Calculator.Stock.Entity.Portofolio;
 import com.Calculator.Stock.Entity.Stock;
 import com.Calculator.Stock.Entity.User;
+import com.Calculator.Stock.Entity.Wallet;
 import com.Calculator.Stock.Mapper.AuditLogDTOMapper;
 import com.Calculator.Stock.Mapper.PortofolioDTOMapper;
 import com.Calculator.Stock.Repository.AuditLogRespository;
@@ -18,11 +19,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PortofolioServiceImpl implements PortofolioService {
+
+    private static final String ACTION_BUY = "BUY";
+    private static final String ACTION_SELL = "SELL";
+    private static final float SHARES_EPSILON = 0.0001f;
 
     private final UserRepository userRepository;
     private final PortofolioRepository portofolioRepository;
@@ -41,56 +48,51 @@ public class PortofolioServiceImpl implements PortofolioService {
     @Override
     public PortofolioDTO addToPortfolio(BuyStockDTO buyStockDTO) {
 
-    String date = new Date().toString();
+        String date = new Date().toString();
 
         User user = userRepository.findById(buyStockDTO.getUser_id())
                 .orElseThrow(() -> new ResourceNotFoundException("User Not Found"));
 
-        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(buyStockDTO.getSymbol());
-
-        Optional<Portofolio> portofolioAlrExt = portofolioRepository.findByUserAndSymbol(user, buyStockDTO.getSymbol());
-        Portofolio portofolio;
         if (buyStockDTO.getCurrentPrice() <= 0) {
             throw new InsufficientFundsException("Current price must be greater than 0");
         }
-        if(buyStockDTO.getAmountToInvest() > user.getWallet().getBalance()) {
+        if (buyStockDTO.getAmountToInvest() <= 0) {
+            throw new InsufficientFundsException("The amount to invest must be greater than 0");
+        }
+
+        Wallet wallet = user.getWallet();
+        if (wallet == null) {
+            throw new ResourceNotFoundException("Wallet not found");
+        }
+        if (buyStockDTO.getAmountToInvest() > wallet.getBalance()) {
             throw new InsufficientFundsException("Insufficient Funds");
         }
 
+        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(buyStockDTO.getSymbol());
+        float latestPrice = stock != null ? stock.getPrice() : buyStockDTO.getCurrentPrice();
+
         float shares = buyStockDTO.getAmountToInvest() / buyStockDTO.getCurrentPrice();
 
-        if(portofolioAlrExt.isPresent()) {
-            portofolio = portofolioAlrExt.get();
+        // The purchase is paid from the wallet regardless of whether the position already exists.
+        wallet.setBalance(wallet.getBalance() - buyStockDTO.getAmountToInvest());
 
+        Optional<Portofolio> portofolioAlrExt = portofolioRepository.findByUserAndSymbol(user, buyStockDTO.getSymbol());
+        Portofolio portofolio;
+
+        if (portofolioAlrExt.isPresent()) {
+            portofolio = portofolioAlrExt.get();
 
             float newAmountOwned = portofolio.getAmountOwned() + buyStockDTO.getAmountToInvest();
             float totalShares = portofolio.getShares() + shares;
-            user.getWallet().setBalance(user.getWallet().getBalance() - buyStockDTO.getAmountToInvest());
 
             if (totalShares > 0) {
-                float newAverageValue = newAmountOwned / totalShares;
-                portofolio.setAveragePrice(newAverageValue);
+                portofolio.setAveragePrice(newAmountOwned / totalShares);
             } else {
                 portofolio.setAveragePrice(0);
             }
 
-            float profit = (stock.getPrice() - portofolio.getAveragePrice()) * portofolio.getShares();
-
-            portofolio.setProfit(profit);
             portofolio.setAmountOwned(newAmountOwned);
             portofolio.setShares(totalShares);
-
-            AuditLogDTO auditLogDTO = new AuditLogDTO();
-            auditLogDTO.setUser_id(user.getId());
-            auditLogDTO.setDate(date);
-            auditLogDTO.setShares(shares);
-            auditLogDTO.setSymbol(buyStockDTO.getSymbol());
-            auditLogDTO.setPrice(buyStockDTO.getCurrentPrice());
-            auditLogDTO.setTotal(buyStockDTO.getAmountToInvest());
-
-            auditLogRespository.save(auditLogDTOMapper.auditLogDTOToAuditLog(auditLogDTO,user));
-
-
         } else {
             portofolio = new Portofolio();
             portofolio.setUser(user);
@@ -98,23 +100,17 @@ public class PortofolioServiceImpl implements PortofolioService {
             portofolio.setAveragePrice(buyStockDTO.getCurrentPrice());
             portofolio.setShares(shares);
             portofolio.setAmountOwned(buyStockDTO.getAmountToInvest());
-
-            AuditLogDTO auditLogDTO = new AuditLogDTO();
-            auditLogDTO.setUser_id(user.getId());
-            auditLogDTO.setDate(date);
-            auditLogDTO.setShares(shares);
-            auditLogDTO.setSymbol(buyStockDTO.getSymbol());
-            auditLogDTO.setPrice(buyStockDTO.getCurrentPrice());
-            auditLogDTO.setTotal(buyStockDTO.getAmountToInvest());
-
-            auditLogRespository.save(auditLogDTOMapper.auditLogDTOToAuditLog(auditLogDTO,user));
-
-
         }
 
-        emailSenderService.sendInfoEmail(user.getEmail(),"Thank you for your purchase","The stock "+ buyStockDTO.getSymbol()+" has been purchased successfully"+ "\n\n"+ "The amount ("+buyStockDTO.getAmountToInvest() + ") is already in your balance have a nice day and thank your for your purchase.");
+        portofolio.setProfit((latestPrice - portofolio.getAveragePrice()) * portofolio.getShares());
 
+        saveAuditLog(user, ACTION_BUY, buyStockDTO.getSymbol(), buyStockDTO.getCurrentPrice(), shares, buyStockDTO.getAmountToInvest(), date);
+
+        // Persist the wallet change explicitly (Wallet is cascaded from User).
+        userRepository.save(user);
         Portofolio savedPortofolio = portofolioRepository.save(portofolio);
+
+        emailSenderService.sendInfoEmail(user.getEmail(), "Thank you for your purchase", "The stock " + buyStockDTO.getSymbol() + " has been purchased successfully" + "\n\n" + "The amount (" + buyStockDTO.getAmountToInvest() + ") has been deducted from your balance. Have a nice day and thank you for your purchase.");
 
         return portofolioDTOMapper.portofolioToPortofolioDTO(savedPortofolio);
     }
@@ -122,44 +118,69 @@ public class PortofolioServiceImpl implements PortofolioService {
 
     @Override
     public PortofolioDTO SellToPortfolio(SellStockDTO sellStockDTO) {
+
+        String date = new Date().toString();
+
         User user = userRepository.findById(sellStockDTO.getUser_id()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Optional<Portofolio> existentPortofolio = portofolioRepository.findByUserAndSymbol(user, sellStockDTO.getSymbol());
-        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(sellStockDTO.getSymbol());
-        Portofolio portofolio;
 
-        if(existentPortofolio.isPresent()) {
-
-            portofolio = existentPortofolio.get();
-
-            float Shares = sellStockDTO.getWithdrawAmount() / sellStockDTO.getCurrentPrice();
-
-            if (Shares < 0.00001) {
-                Shares = 0;
-            }
-
-            float NewAmountOwned = portofolio.getAmountOwned() - sellStockDTO.getWithdrawAmount();
-            float NewTotalShares = portofolio.getShares() - Shares;
-            float profit = (stock.getPrice() - portofolio.getAveragePrice()) * portofolio.getShares();
-
-            portofolio.setProfit(profit);
-
-
-            if(portofolio.getShares() >= Shares){
-                if(NewTotalShares < 0.0001) {
-                    NewTotalShares = 0;
-                }
-                portofolio.setShares(NewTotalShares);
-            }else {
-                throw  new InsufficientFundsException("Sorry you don t have enough shares");
-            }
-            if(portofolio.getAmountOwned() >= sellStockDTO.getWithdrawAmount()){
-                portofolio.setAmountOwned(NewAmountOwned);
-            }else {
-               throw new InsufficientFundsException("Sorry you don t have enough");
-            }
-        }else {
-            throw new ResourceNotFoundException("User not found");
+        if (sellStockDTO.getCurrentPrice() <= 0) {
+            throw new InsufficientFundsException("Current price must be greater than 0");
         }
+        if (sellStockDTO.getWithdrawAmount() <= 0) {
+            throw new InsufficientFundsException("The amount to withdraw must be greater than 0");
+        }
+
+        Wallet wallet = user.getWallet();
+        if (wallet == null) {
+            throw new ResourceNotFoundException("Wallet not found");
+        }
+
+        Portofolio portofolio = portofolioRepository.findByUserAndSymbol(user, sellStockDTO.getSymbol())
+                .orElseThrow(() -> new ResourceNotFoundException("You don't own any shares of " + sellStockDTO.getSymbol()));
+
+        Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(sellStockDTO.getSymbol());
+        float latestPrice = stock != null ? stock.getPrice() : sellStockDTO.getCurrentPrice();
+
+        float sharesToSell = sellStockDTO.getWithdrawAmount() / sellStockDTO.getCurrentPrice();
+        float ownedShares = portofolio.getShares();
+
+        if (sharesToSell > ownedShares + SHARES_EPSILON) {
+            throw new InsufficientFundsException("Sorry you don t have enough shares");
+        }
+
+        float newTotalShares = ownedShares - sharesToSell;
+        if (newTotalShares < SHARES_EPSILON) {
+            newTotalShares = 0;
+        }
+
+        // The cost basis (amountOwned) shrinks proportionally to the shares that were sold,
+        // so a profitable position can be fully closed.
+        float newAmountOwned = 0;
+        if (newTotalShares > 0 && ownedShares > 0) {
+            newAmountOwned = portofolio.getAmountOwned() * (newTotalShares / ownedShares);
+        }
+
+        // The proceeds of the sale go back into the wallet.
+        wallet.setBalance(wallet.getBalance() + sellStockDTO.getWithdrawAmount());
+
+        portofolio.setShares(newTotalShares);
+        portofolio.setAmountOwned(newAmountOwned);
+        portofolio.setProfit((latestPrice - portofolio.getAveragePrice()) * newTotalShares);
+
+        saveAuditLog(user, ACTION_SELL, sellStockDTO.getSymbol(), sellStockDTO.getCurrentPrice(), sharesToSell, sellStockDTO.getWithdrawAmount(), date);
+
+        if (newTotalShares == 0) {
+            // Position fully closed: remove the row instead of keeping zeros around.
+            if (user.getPortofolio() != null) {
+                user.getPortofolio().remove(portofolio);
+            }
+            portofolioRepository.delete(portofolio);
+            userRepository.save(user);
+
+            return portofolioDTOMapper.portofolioToPortofolioDTO(portofolio);
+        }
+
+        userRepository.save(user);
         Portofolio savePortofolio = portofolioRepository.save(portofolio);
 
         return portofolioDTOMapper.portofolioToPortofolioDTO(savePortofolio);
@@ -196,28 +217,49 @@ public class PortofolioServiceImpl implements PortofolioService {
         List<Portofolio> portofolio = portofolioRepository.findAllByUser(user);
         TotalDTO totalDTO = new TotalDTO();
         List<PortfolioChartDTO> portfolioChartDTOList = new ArrayList<>();
+
+        // Ignore closed positions (defensive: rows left with zeros by older versions).
+        List<Portofolio> openPositions = new ArrayList<>();
+        for (Portofolio p : portofolio) {
+            if (p.getShares() > 0 || p.getAmountOwned() > 0) {
+                openPositions.add(p);
+            }
+        }
+
         float total = 0;
-        for(Portofolio p: portofolio){
+        for (Portofolio p : openPositions) {
             total += p.getAmountOwned();
         }
-        for(Portofolio p: portofolio){
-        PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
-        float percentage = 0;
-        portfolioChartDTO.setSymbol(p.getSymbol());
-        portfolioChartDTO.setValue(p.getAmountOwned());
 
-        if(total>0){
-            percentage = (p.getAmountOwned()/total)*100;
-        }
-        portfolioChartDTO.setPercentage(percentage);
+        float marketValue = 0;
+        for (Portofolio p : openPositions) {
+            PortfolioChartDTO portfolioChartDTO = new PortfolioChartDTO();
+            float percentage = 0;
 
-        portfolioChartDTOList.add(portfolioChartDTO);
+            Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(p.getSymbol());
+            float positionMarketValue = stock != null ? p.getShares() * stock.getPrice() : p.getAmountOwned();
+            marketValue += positionMarketValue;
+
+            portfolioChartDTO.setSymbol(p.getSymbol());
+            portfolioChartDTO.setValue(p.getAmountOwned());
+
+            if (total > 0) {
+                percentage = (p.getAmountOwned() / total) * 100;
+            }
+            portfolioChartDTO.setPercentage(percentage);
+            portfolioChartDTO.setMarketValue(positionMarketValue);
+            portfolioChartDTO.setProfit(positionMarketValue - p.getAmountOwned());
+
+            portfolioChartDTOList.add(portfolioChartDTO);
         }
+
         totalDTO.setPortfolioChart(portfolioChartDTOList);
         totalDTO.setUser_Id(user.getId());
         totalDTO.setTotal(total);
-
-
+        totalDTO.setInvestedValue(total);
+        totalDTO.setMarketValue(marketValue);
+        totalDTO.setTotalProfit(marketValue - total);
+        totalDTO.setBalance(user.getWallet() != null ? user.getWallet().getBalance() : 0);
 
         return totalDTO;
     }
@@ -228,32 +270,55 @@ public class PortofolioServiceImpl implements PortofolioService {
         String email = authentication.getName();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Portofolio portofolio1 = portofolioRepository.findByUserAndSymbol(user,symbol).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Optional<Portofolio> position = portofolioRepository.findByUserAndSymbol(user, symbol);
         List<Portofolio> portofolio = portofolioRepository.findAllByUser(user);
 
         Stock stock = stockRepository.findTopBySymbolOrderByDateDesc(symbol);
 
-        float total =0;
-        float dailyProfit = (stock.getPrice() - stock.getOpen())*portofolio1.getShares();
-        float dailyProfitPercentage = ((stock.getPrice() - stock.getOpen())/stock.getOpen())*100;
+        float dailyProfit = 0;
+        float dailyProfitPercentage = 0;
         float totalDailyProfit = 0;
         float totalDailyProfitPercentage = 0;
         float totalValAtOpening = 0;
 
-        for(Portofolio p: portofolio){
+        // Per-symbol fields stay 0 when the user holds no shares of the symbol or no quote exists.
+        if (position.isPresent() && position.get().getShares() > 0 && stock != null) {
+            dailyProfit = (stock.getPrice() - stock.getOpen()) * position.get().getShares();
+            if (stock.getOpen() != 0) {
+                dailyProfitPercentage = ((stock.getPrice() - stock.getOpen()) / stock.getOpen()) * 100;
+            }
+        }
 
+        for (Portofolio p : portofolio) {
+            if (p.getShares() <= 0) {
+                continue;
+            }
             Stock stock1 = stockRepository.findTopBySymbolOrderByDateDesc(p.getSymbol());
-            totalDailyProfit += (stock1.getPrice() - stock1.getOpen())*p.getShares();
+            if (stock1 == null) {
+                continue;
+            }
+            totalDailyProfit += (stock1.getPrice() - stock1.getOpen()) * p.getShares();
             totalValAtOpening += stock1.getOpen() * p.getShares();
         }
 
-        if(totalValAtOpening != 0){
-        totalDailyProfitPercentage = (totalDailyProfit/totalValAtOpening)*100;
-        }else{
-            throw new ResourceNotFoundException("Sorry an error occurred");
+        if (totalValAtOpening != 0) {
+            totalDailyProfitPercentage = (totalDailyProfit / totalValAtOpening) * 100;
         }
 
-        return  new DailyProfitDTO(user.getId(),dailyProfit,dailyProfitPercentage,totalDailyProfit,totalDailyProfitPercentage);
+        return new DailyProfitDTO(user.getId(), dailyProfit, dailyProfitPercentage, totalDailyProfit, totalDailyProfitPercentage);
+    }
+
+    private void saveAuditLog(User user, String action, String symbol, float price, float shares, float total, String date) {
+        AuditLogDTO auditLogDTO = new AuditLogDTO();
+        auditLogDTO.setUser_id(user.getId());
+        auditLogDTO.setDate(date);
+        auditLogDTO.setShares(shares);
+        auditLogDTO.setSymbol(symbol);
+        auditLogDTO.setPrice(price);
+        auditLogDTO.setTotal(total);
+        auditLogDTO.setAction(action);
+
+        auditLogRespository.save(auditLogDTOMapper.auditLogDTOToAuditLog(auditLogDTO, user));
     }
 
 

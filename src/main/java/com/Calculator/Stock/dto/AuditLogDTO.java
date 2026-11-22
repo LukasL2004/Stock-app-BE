@@ -18,6 +18,7 @@ public class AuditLogDTO {
     private String date;
     private float price;
     private float shares;
+    private String action;
 
     private Long User_id;
 }
